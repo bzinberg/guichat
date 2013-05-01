@@ -1,2 +1,9 @@
 /bin/
 .DS_Store
+*.aux
+*.log
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.txt~
