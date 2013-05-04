@@ -1,0 +1,29 @@
+Tasks
+_____
+
+Make a preliminary client and GUI design
+ - Deadline: Monday, 5/6 afternoon
+ - Member: Ben
+
+Server implementation, including IMServer, User, and Conversation
+ - Deadline: Wednesday, 5/8 night
+ - Members: Vinay and Akashnil
+ - Code review and bug-fixing on Thursday 5/9
+
+Add concurrency strategy to the design doc
+ - Deadline: Thursday 5/9 night
+ - Member: Vinay
+
+Detail testing strategy
+ - Deadline: Thursday 5/9 night
+ - Member: Akashnil
+
+Implement client
+ - Deadline: Sunday 5/12 night
+ - Member: Ben
+ - Code review and bug-fixing on Monday 5/13
+
+Tests for guichat as a whole
+ - Deadline: Monday 5/13 night
+
+NOTE: Each person should write tests and documentation for the methods he writes.
