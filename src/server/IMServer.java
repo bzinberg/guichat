@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class IMServer implements Runnable {
 
@@ -198,7 +197,7 @@ public class IMServer implements Runnable {
 			if(!conv.contains(u))
 				return false;
 			conv.remove(u);
-			if(conv.getUsers().isEmpty()) {
+			if(conv.isEmpty()) {
 				synchronized(conversations) {
 					conversations.remove(convName);
 				}
@@ -210,10 +209,10 @@ public class IMServer implements Runnable {
 	/**
 	 * Removes User u from each of his conversations, sending a
 	 * removed from conversation message to every other user in
-	 * the conversation, using exitConversation, and removing
+	 * the conversation, using remove, and removing
 	 * empty conversations from this.conversations.  Removes u
 	 * from this.users.  Sends a disconnected message to all
-	 * clients.  Interrupts u if u is non-null.
+	 * clients.
 	 * 
 	 * If u is null, does nothing.
 	 * 
@@ -222,23 +221,11 @@ public class IMServer implements Runnable {
 	void disconnectUser(User u) {
 		if(u == null)
 			return;
-		u.disconnectUser();
+		u.removeFromConversations();
 		synchronized(users) {
 			users.remove(u);
 			for(User v : users)
 				v.sendDisconnectedMessage(u);
-		}
-		u.interrupt();
-	}
-	
-	public void run () {
-		while(true) {
-			Socket socket;
-			try {
-				socket = serverSocket.accept(); 
-				new User(this, socket).start();
-			}
-			catch(IOException e) { }
 		}
 	}
 	
@@ -262,5 +249,17 @@ public class IMServer implements Runnable {
 			u.sendConnectedMessage(u);
 		else
 			u.sendDisconnectedMessage(u);
+		return added;
+	}
+	
+	public void run () {
+		while(true) {
+			Socket socket;
+			try {
+				socket = serverSocket.accept(); 
+				new User(this, socket).start();
+			}
+			catch(IOException e) { }
+		}
 	}
 }

@@ -1,12 +1,12 @@
 package server;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 public class Conversation {
 	
 	private final String name;
-	private final HashSet<User> userSet;
+	private final Set<User> userSet;
 	
 	/**
 	 * Creates a conversation with a given name
@@ -81,6 +81,10 @@ public class Conversation {
 		for (User v : userSet) {
 			v.sendIMMessage(u, m, uniqueID, name);
 		}
+	}
+	
+	synchronized boolean isEmpty() {
+		return userSet.isEmpty();
 	}
 	
 	/**

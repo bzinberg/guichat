@@ -23,4 +23,10 @@ public class NetworkConstants {
 	public static final String FAILURE = "0";
 	public static final String SUCCESS = "1";
 	
+	public static final String USERNAME = "[^\t\n]{1,256}";
+	public static final String CONV_NAME = "[^\t\n]{1,256}";
+	public static final String NEW_CONV_NAME = "[^\t\n]{0,256}";
+	public static final String IM_ID = "[0-9]{1,9}";
+	public static final String MESSAGE = "[^\t\n]{1,512}";
+	
 }

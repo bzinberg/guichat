@@ -46,16 +46,18 @@ public class User extends Thread {
 	@Override
 	public void run() {
 		try {
-			
 			for (String line = in.readLine(); line != null && name == null; line = in.readLine())
 				handleConnection(line);
 			for (String line = in.readLine(); line != null; line = in.readLine())
             	handleRequest(line);
-		} catch(Exception e) {
-			
+		}
+		catch(Exception e) {
 			try { in.close(); }
 			catch(IOException ee) {}
+			try { socket.close(); }
+			catch(IOException ee) {}
 			out.close();
+			server.disconnectUser(this);
 		}
 	}
 	
@@ -65,7 +67,7 @@ public class User extends Thread {
 		String[] args = req.split("\t");
 		if(args.length != 2)
 			return false;
-		else if(!args[1].matches("[^\t\n]{1,256}"))
+		else if(!args[1].matches(NetworkConstants.USERNAME))
 			return false;
 		
 		name = args[1];
@@ -80,7 +82,7 @@ public class User extends Thread {
 	 * @param req The client's request.
 	 * @return True if the request is valid and is properly executed.
 	 */
-	private boolean handleRequest(String req) {
+	private boolean handleRequest(String req) throws InterruptedException {
 		if(req == null)
 			return false;
 		String[] args = req.split("\t");
@@ -96,15 +98,42 @@ public class User extends Thread {
 			return enterConv(args);
 		else if(args[0].equals(NetworkConstants.EXIT_CONV))
 			return exitConv(args);
-		else if(args[0].equals(NetworkConstants.DISCONNECT))
-			return disconnect(args);
+		else if(args[0].equals(NetworkConstants.DISCONNECT)) {
+			throw new InterruptedException();
+		}
 		else
 			return false;
 	}
 	
-	synchronized void disconnectUser() {
+	private boolean im(String[] args) {
+		if(args.length != 4)
+			return false;
+		if(!args[1].matches(NetworkConstants.CONV_NAME)
+				|| !args[2].matches(NetworkConstants.IM_ID)
+				|| !args[3].matches(NetworkConstants.MESSAGE))
+			return false;
+		return server.sendMessage(this, args[1], Integer.parseInt(args[2]), args[3]);
+	}
+
+	private boolean newConv(String[] args) {
+		return false;
+	}
+
+	private boolean addToConv(String[] args) {
+		return false;
+	}
+
+	private boolean enterConv(String[] args) {
+		return false;
+	}
+
+	private boolean exitConv(String[] args) {
+		return false;
+	}
+
+	synchronized void removeFromConversations() {
 		for(Conversation c : convSet) {
-			c.remove(u);
+			c.remove(this);
 		}
 	}
 	
@@ -185,9 +214,7 @@ public class User extends Thread {
 	void sendNewConvReceiptMessage(boolean success, String convName) {
 		String message = NetworkConstants.NEW_CONV_RECEIPT + "\t"
 				+ (success ? NetworkConstants.SUCCESS : NetworkConstants.FAILURE) + "\t"
-				+ convName + "\t"
-				+ messageId + "\t"
-				+ m;
+				+ convName;
 		send(message);
 	}
 	
