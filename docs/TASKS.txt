@@ -4,18 +4,20 @@ _____
 Make a preliminary client and GUI design
  - Deadline: Monday, 5/6 afternoon
  - Member: Ben
+ - COMPLETED
 
 Server implementation, including IMServer, User, and Conversation
- - Deadline: Wednesday, 5/8 night
+ - Deadline: Wednesday, 5/7 night
  - Members: Vinay and Akashnil
- - Code review and bug-fixing on Thursday 5/9
+ - Code review and bug-fixing on Thursday 5/8
+ - COMPLETED
 
 Add concurrency strategy to the design doc
- - Deadline: Thursday 5/9 night
+ - Deadline: Thursday 5/8 night
  - Member: Vinay
 
 Detail testing strategy
- - Deadline: Thursday 5/9 night
+ - Deadline: Thursday 5/8 night
  - Member: Akashnil
 
 Implement client
