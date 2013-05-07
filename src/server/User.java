@@ -57,7 +57,7 @@ public class User extends Thread {
 			try { socket.close(); }
 			catch(IOException ee) {}
 			out.close();
-			server.disconnectUser(this);
+			server.disconnectUser(name);
 		}
 	}
 	
@@ -71,7 +71,10 @@ public class User extends Thread {
 			return false;
 		
 		name = args[1];
-		return server.connectUser(this);
+		boolean connected = server.connectUser(this);
+		if(!connected)
+			name = null;
+		return connected;
 	}
 	
 	/**
@@ -106,25 +109,38 @@ public class User extends Thread {
 	}
 	
 	private boolean im(String[] args) {
-		if(args.length != 4)
+		if(args == null || args.length != 4)
+			return false;
+		if(args[1] == null || args[2] == null || args[3] == null)
 			return false;
 		if(!args[1].matches(NetworkConstants.CONV_NAME)
 				|| !args[2].matches(NetworkConstants.IM_ID)
 				|| !args[3].matches(NetworkConstants.MESSAGE))
 			return false;
-		return server.sendMessage(this, args[1], Integer.parseInt(args[2]), args[3]);
+		return server.sendMessage(name, args[1], Integer.parseInt(args[2]), args[3]);
 	}
 
 	private boolean newConv(String[] args) {
-		return false;
+		if(args == null || args.length != 2)
+			return false;
+		if(args[1] == null || !args[1].matches(NetworkConstants.NEW_CONV_NAME))
+			return false;
+		return server.newConversation(name, args[1]);
 	}
 
 	private boolean addToConv(String[] args) {
-		return false;
+		if(args == null || args.length != 3)
+			return false;
+		if(args[1] == null || args[2] == null)
+			return false;
+		if(!args[1].matches(NetworkConstants.USERNAME)
+				|| !args[2].matches(NetworkConstants.CONV_NAME))
+			return false;
+		return server.addToConversation(args[1], args[2]);
 	}
 
 	private boolean enterConv(String[] args) {
-		return false;
+		
 	}
 
 	private boolean exitConv(String[] args) {

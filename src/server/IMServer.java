@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class IMServer implements Runnable {
 
-	private final Set<User> users;
+	private final Map<String, User> users;
 	private final Map<String, Conversation> conversations;
 	private final ServerSocket serverSocket;
 	
@@ -23,7 +23,7 @@ public class IMServer implements Runnable {
 	 * @throws IOException If server socket cannot be set up on this port.
 	 */
 	IMServer(int port) throws IOException {
-		users = new HashSet<User>();
+		users = new HashMap<String, User>();
 		conversations = new HashMap<String, Conversation>();
 		serverSocket = new ServerSocket(port);
 	}
@@ -45,13 +45,15 @@ public class IMServer implements Runnable {
 	 * @param m The message string.
 	 * @return True if the message is properly sent, false otherwise.
 	 */
-	boolean sendMessage(User u, String convName, int messageId, String m) {
+	boolean sendMessage(String username, String convName, int messageId, String m) {
 		Conversation conv;
-		if(u == null)
+		User u;
+		if(username == null)
 			return false;
 		synchronized(users) {
-			if(!users.contains(u))
+			if(!users.containsKey(username))
 				return false;
+			u = users.get(username);
 		}
 		synchronized(conversations) {
 			if(!conversations.containsKey(convName))
@@ -87,12 +89,14 @@ public class IMServer implements Runnable {
 	 * 		  or "" for an auto-generated name.
 	 * @return True if the conversation is properly created, false otherwise.
 	 */
-	boolean newConversation(User u, String convName) {
-		if(u == null)
+	boolean newConversation(String username, String convName) {
+		User u;
+		if(username == null)
 			return false;
 		synchronized(users) {
-			if(!users.contains(u))
+			if(!users.containsKey(username))
 				return false;
+			u = users.get(username);
 		}
 		if(convName == null || convName.equals("")) {
 			String genConvName;
@@ -135,17 +139,19 @@ public class IMServer implements Runnable {
 	 * with convName.  In the last case, sends a removed from conversation
 	 * message to u.
 	 * 
-	 * @param u The user to add.
+	 * @param username The username of the user to add.
 	 * @param convName The conversation to which to add u.
 	 * @return True if u was properly added to the conversation.
 	 */
-	boolean addToConversation(User u, String convName) {
+	boolean addToConversation(String username, String convName) {
 		Conversation conv;
-		if(u == null)
+		User u;
+		if(username == null)
 			return false;
 		synchronized(users) {
-			if(!users.contains(u))
+			if(!users.containsKey(username))
 				return false;
+			u = users.get(username);
 		}
 		synchronized(conversations) {
 			conv = conversations.get(convName);
@@ -180,13 +186,15 @@ public class IMServer implements Runnable {
 	 * @return True if u is properly removed from the conversation,
 	 * 		   false otherwise.
 	 */
-	boolean removeFromConversation(User u, String convName) {
+	boolean removeFromConversation(String username, String convName) {
 		Conversation conv;
-		if(u == null)
+		User u;
+		if(username == null)
 			return false;
 		synchronized(users) {
-			if(!users.contains(u))
+			if(!users.containsKey(username))
 				return false;
+			u = users.get(username);
 		}
 		synchronized(conversations) {
 			conv = conversations.get(convName);
@@ -212,41 +220,56 @@ public class IMServer implements Runnable {
 	 * the conversation, using remove, and removing
 	 * empty conversations from this.conversations.  Removes u
 	 * from this.users.  Sends a disconnected message to all
-	 * clients.
+	 * clients if u was in users.
 	 * 
 	 * If u is null, does nothing.
 	 * 
 	 * @param u The user to disconnect.
 	 */
-	void disconnectUser(User u) {
-		if(u == null)
+	void disconnectUser(String username) {
+		User u;
+		Object[] usersArray;
+		if(username == null)
 			return;
-		u.removeFromConversations();
 		synchronized(users) {
-			users.remove(u);
-			for(User v : users)
-				v.sendDisconnectedMessage(u);
+			if(!users.containsKey(username))
+				return;
+			u = users.remove(username);
+			usersArray = users.values().toArray();
 		}
+		u.removeFromConversations();
+		for(Object v : usersArray)
+			((User)v).sendDisconnectedMessage(u);
 	}
-	
+
 	/**
-	 * Adds u to users if u is non-null.  Sends a connected message
-	 * to u if u is not null and not already in users.  Sends a
-	 * disconnected message to u if u is already in users.
+	 * Adds u to users if u is non-null.  Sends an init users list message
+	 * to u and a connected message to all other Users in u if u is not null
+	 * and not already in users.  Sends a disconnected message to u if u is
+	 * already in users.
 	 * 
 	 * @param u The User to add.
 	 * @return True if u was properly added, false if u is null or
 	 * 		   if a User with the same name is already in users.
 	 */
 	boolean connectUser(User u) {
-		boolean added;
+		boolean added = false;
+		Object[] usersArray;
 		if(u == null)
 			return false;
 		synchronized(users) {
-			added = users.add(u);
+			if(!users.containsKey(u.getUsername())) {
+				users.put(u.getUsername(), u);
+				usersArray = users.values().toArray();
+				added = true;
+			}
 		}
-		if(added)
-			u.sendConnectedMessage(u);
+		if(added) {
+			for(Object v : usersArray) {
+				((User)v).sendConnectedMessage(u);
+			}
+			u.sendInitUsersListMessage(usersArray);
+		}
 		else
 			u.sendDisconnectedMessage(u);
 		return added;
