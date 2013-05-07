@@ -25,7 +25,7 @@ public class Conversation {
 	 */
 	Conversation(String name, User u) {
 		this(name);
-		addUser(u);
+		add(u);
 	}
 	
 	/**
@@ -33,41 +33,41 @@ public class Conversation {
 	 * users in the conversation. Notifies other users that the user has been
 	 * added to the conversation.
 	 * @param u
-	 * @return true iff there is no user in the conversation with same id
+	 * @return true iff there is no user in the conversation with same name already
 	 */
-	synchronized boolean addUser(User u) {
+	synchronized boolean add(User u) {
 		boolean b = userSet.add(u);
-		if (b) {
-			u.sendConversation(this);
-			for (User v : userSet) {
-				if (!v.equals(u))
-					v.addedUserToConversation(u, this);
-			}
+		if (!b) return false;
+		u.addConversation(this);
+		for (User v : userSet) {
+			if (!v.equals(u))
+				v.addUserInConversation(u, name);
 		}
-		return b;
+		return true;
 	}
 	
 	/**
 	 * removes user u from the conversation. Notifes every user that the user
 	 * has been removed from the conversation.
 	 * @param u
-	 * @return true iff there is a user in the conversation with the same id
+	 * @return true iff there is a user in the conversation with the same name
 	 */
-	synchronized boolean removeUser(User u) {
+	synchronized boolean remove(User u) {
 		boolean b = userSet.remove(u);
-		if (b) {
-			for (User v : userSet) {
-				v.removedFromConversation(u, this);
-			}
+		if (!b) return false;
+		for (User v : userSet) {
+			if (!v.equals(u))
+				v.removeUserInConversation(u, name);
 		}
-		u.removedFromConversation(u, this);
+		u.removeConversation(this);
+		return true;
 	}
 	
 	/**.
 	 * @param u
 	 * @return true iff there is a user in the conversation with the same id
 	 */
-	synchronized boolean containsUser(User u) {
+	synchronized boolean contains(User u) {
 		return userSet.contains(u);
 	}
 	
@@ -93,6 +93,16 @@ public class Conversation {
 	@Override
 	public int hashCode() {
 		return name.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder ret = new StringBuilder();
+		ret.append(name);
+		for (User u : userSet) {
+			ret.append("\t");
+			ret.append(u.getName());
+		}
 	}
 	
 }
