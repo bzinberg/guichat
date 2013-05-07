@@ -79,7 +79,7 @@ public class Conversation {
 	 */
 	synchronized void sendMessage(User u, String m, int uniqueID) {
 		for (User v : userSet) {
-			v.sendMessage(u, m, uniqueID, this);
+			v.sendMessage(u, m, uniqueID, name);
 		}
 	}
 	
@@ -103,6 +103,7 @@ public class Conversation {
 			ret.append("\t");
 			ret.append(u.getName());
 		}
+		return ret.toString();
 	}
 	
 }
