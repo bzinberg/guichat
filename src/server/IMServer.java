@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 public class IMServer implements Runnable {
 
@@ -22,7 +20,7 @@ public class IMServer implements Runnable {
 	 * @param port The port on which to listen for user connections.
 	 * @throws IOException If server socket cannot be set up on this port.
 	 */
-	IMServer(int port) throws IOException {
+	public IMServer(int port) throws IOException {
 		users = new HashMap<String, User>();
 		conversations = new HashMap<String, Conversation>();
 		serverSocket = new ServerSocket(port);
@@ -237,7 +235,7 @@ public class IMServer implements Runnable {
 			u = users.remove(username);
 			usersArray = users.values().toArray();
 		}
-		u.removeFromConversations();
+		u.removeFromAllConversations();
 		for(Object v : usersArray)
 			((User)v).sendDisconnectedMessage(u);
 	}
@@ -254,7 +252,7 @@ public class IMServer implements Runnable {
 	 */
 	boolean connectUser(User u) {
 		boolean added = false;
-		Object[] usersArray;
+		Object[] usersArray = new Object[0];
 		if(u == null)
 			return false;
 		synchronized(users) {
@@ -266,7 +264,8 @@ public class IMServer implements Runnable {
 		}
 		if(added) {
 			for(Object v : usersArray) {
-				((User)v).sendConnectedMessage(u);
+				if(!u.equals(v))
+					((User)v).sendConnectedMessage(u);
 			}
 			u.sendInitUsersListMessage(usersArray);
 		}

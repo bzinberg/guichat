@@ -2,6 +2,8 @@ package main;
 
 public class NetworkConstants {
 	
+	public static final int DEFAULT_PORT = 4445;
+	
 	public static final String INIT_USERS_LIST = "0";
 	public static final String IM = "1";
 	public static final String NEW_CONV_RECEIPT = "2";

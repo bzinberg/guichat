@@ -13,7 +13,7 @@ public class User extends Thread {
 	
 	private String name;
 	private final Socket socket;
-	private final HashSet<Conversation> convSet;
+	private final HashSet<Conversation> conversations;
 	private final PrintWriter out;
 	private final BufferedReader in;
 	private final IMServer server;
@@ -27,7 +27,7 @@ public class User extends Thread {
 	User(IMServer server, Socket socket) throws IOException {
 		this.server = server;
 		this.socket = socket;
-		this.convSet = new HashSet<Conversation>();
+		this.conversations = new HashSet<Conversation>();
 		this.out = new PrintWriter(socket.getOutputStream(), true);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
@@ -46,9 +46,10 @@ public class User extends Thread {
 	@Override
 	public void run() {
 		try {
-			for (String line = in.readLine(); line != null && name == null; line = in.readLine())
+			String line;
+			for (line = in.readLine(); line != null && name == null; line = in.readLine())
 				handleConnection(line);
-			for (String line = in.readLine(); line != null; line = in.readLine())
+			for (; line != null; line = in.readLine())
             	handleRequest(line);
 		}
 		catch(Exception e) {
@@ -140,16 +141,25 @@ public class User extends Thread {
 	}
 
 	private boolean enterConv(String[] args) {
-		
+		if(args == null || args.length != 2)
+			return false;
+		if(args[1] == null || !args[1].matches(NetworkConstants.CONV_NAME))
+			return false;
+		return server.addToConversation(name, args[1]);
 	}
 
 	private boolean exitConv(String[] args) {
-		return false;
+		if(args == null || args.length != 2)
+			return false;
+		if(args[1] == null || !args[1].matches(NetworkConstants.CONV_NAME))
+			return false;
+		return server.removeFromConversation(name, args[1]);
 	}
 
-	synchronized void removeFromConversations() {
-		for(Conversation c : convSet) {
-			c.remove(this);
+	synchronized void removeFromAllConversations() {
+		Object[] convCopy = conversations.toArray();
+		for(Object c : convCopy) {
+			((Conversation)c).remove(this);
 		}
 	}
 	
@@ -160,7 +170,7 @@ public class User extends Thread {
 	 * @return true iff the user is not already in this conversation
 	 */
 	synchronized boolean addConversation(Conversation conv) {
-		boolean b = convSet.add(conv);
+		boolean b = conversations.add(conv);
 		if (!b) return false;
 		sendEnteredConvMessage(conv);
 		return true;
@@ -172,7 +182,7 @@ public class User extends Thread {
 	 * @return
 	 */
 	synchronized boolean removeConversation(Conversation conv) {
-		return convSet.remove(conv);
+		return conversations.remove(conv);
 	}
 	
 	void sendInitUsersListMessage(Object[] users) {
@@ -206,7 +216,9 @@ public class User extends Thread {
 	 * @param convName
 	 */
 	void sendRemovedFromConvMessage(User u, String convName) {
-		String message = NetworkConstants.REMOVED_FROM_CONV + "\t" + convName;
+		String message = NetworkConstants.REMOVED_FROM_CONV + "\t"
+				+ u.getUsername() + "\t"
+				+ convName;
 		send(message);
 	}
 	
@@ -263,7 +275,7 @@ public class User extends Thread {
 	}
 	
 	synchronized boolean isInConversation(Conversation conv) {
-		return convSet.contains(conv);
+		return conversations.contains(conv);
 	}
 
 }

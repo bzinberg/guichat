@@ -6,7 +6,7 @@ import java.util.Set;
 public class Conversation {
 	
 	private final String name;
-	private final Set<User> userSet;
+	private final Set<User> users;
 	
 	/**
 	 * Creates a conversation with a given name
@@ -14,7 +14,7 @@ public class Conversation {
 	 */
 	Conversation(String name) {
 		this.name = name;
-		userSet = new HashSet<User>();
+		users = new HashSet<User>();
 	}
 	
 	/**
@@ -36,10 +36,10 @@ public class Conversation {
 	 * @return true iff there is no user in the conversation with same name already
 	 */
 	synchronized boolean add(User u) {
-		boolean b = userSet.add(u);
+		boolean b = users.add(u);
 		if (!b) return false;
 		u.addConversation(this);
-		for (User v : userSet) {
+		for (User v : users) {
 			if (!v.equals(u))
 				v.sendAddedToConvMessage(u, name);
 		}
@@ -53,9 +53,9 @@ public class Conversation {
 	 * @return true iff there is a user in the conversation with the same name
 	 */
 	synchronized boolean remove(User u) {
-		boolean b = userSet.remove(u);
+		boolean b = users.remove(u);
 		if (!b) return false;
-		for (User v : userSet) {
+		for (User v : users) {
 			if (!v.equals(u))
 				v.sendRemovedFromConvMessage(u, name);
 		}
@@ -68,7 +68,7 @@ public class Conversation {
 	 * @return true iff there is a user in the conversation with the same id
 	 */
 	synchronized boolean contains(User u) {
-		return userSet.contains(u);
+		return users.contains(u);
 	}
 	
 	/**
@@ -78,13 +78,13 @@ public class Conversation {
 	 * @param uniqueID
 	 */
 	synchronized void sendMessage(User u, String m, int uniqueID) {
-		for (User v : userSet) {
+		for (User v : users) {
 			v.sendIMMessage(u, m, uniqueID, name);
 		}
 	}
 	
 	synchronized boolean isEmpty() {
-		return userSet.isEmpty();
+		return users.isEmpty();
 	}
 	
 	/**
@@ -103,9 +103,9 @@ public class Conversation {
 	public String toString() {
 		StringBuilder ret = new StringBuilder();
 		ret.append(name);
-		for (User u : userSet) {
+		for (User u : users) {
 			ret.append("\t");
-			ret.append(u.getName());
+			ret.append(u.getUsername());
 		}
 		return ret.toString();
 	}
