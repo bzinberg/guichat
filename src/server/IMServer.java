@@ -235,17 +235,24 @@ public class IMServer implements Runnable {
 	}
 	
 	/**
-	 * Adds u to users if u is non-null.
+	 * Adds u to users if u is non-null.  Sends a connected message
+	 * to u if u is not null and not already in users.  Sends a
+	 * disconnected message to u if u is already in users.
 	 * 
 	 * @param u The User to add.
 	 * @return True if u was properly added, false if u is null or
 	 * 		   if a User with the same name is already in users.
 	 */
 	boolean connectUser(User u) {
+		boolean added;
 		if(u == null)
 			return false;
 		synchronized(users) {
-			return users.add(u);
+			added = users.add(u);
 		}
+		if(added)
+			u.sendConnectedMessage();
+		else
+			u.sendDisconnectedMessage();
 	}
 }
