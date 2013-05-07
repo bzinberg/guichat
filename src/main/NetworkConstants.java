@@ -11,4 +11,13 @@ public class NetworkConstants {
 	public static final String CONNECTED = "6";
 	public static final String DISCONNECTED = "7";
 	
+	
+	public static final String CONNECT = "0";
+	//public static final String IM = "1";
+	public static final String NEW_CONV = "2";
+	public static final String ADD_TO_CONV = "3";
+	public static final String ENTER_CONV = "4";
+	public static final String EXIT_CONV = "5";
+	public static final String DISCONNECT = "6";	
+	
 }

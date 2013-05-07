@@ -1,6 +1,7 @@
 package server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -42,6 +43,61 @@ public class User extends Thread {
 	
 	@Override
 	public void run() {
+		try {
+            for (String line = in.readLine(); line != null; line = in.readLine())
+            	handleRequest(line);
+		} catch(Exception e) {
+			
+			try { in.close(); }
+			catch(IOException e) {}
+			out.close();
+		}
+	}
+	
+	/**
+	 * Handles the given request and returns true.  If the request
+	 * does not follow the specified grammar or cannot be processed,
+	 * returns false.
+	 * 
+	 * @param req The client's request.
+	 * @return True if the request is valid and is properly executed.
+	 */
+	private boolean handleRequest(String req) {
+		if(req == null)
+			return false;
+		String[] args = req.split("\t");
+		if(args.length == 0)
+			return false;
+		if(args[0].equals(NetworkConstants.CONNECT)) // CONNECT
+			return connect(args);
+		else if(args[0].equals(NetworkConstants.IM))
+			return im(args);
+		else if(args[0].equals(NetworkConstants.NEW_CONV))
+			return newConv(args);
+		else if(args[0].equals(NetworkConstants.ADD_TO_CONV))
+			return addToConv(args);
+		else if(args[0].equals(NetworkConstants.ENTER_CONV))
+			return enterConv(args);
+		else if(args[0].equals(NetworkConstants.EXIT_CONV))
+			return exitConv(args);
+		else if(args[0].equals(NetworkConstants.DISCONNECT))
+			return disconnect(args);
+		else
+			return false;
+	}
+	
+	private boolean connect(String[] args) {
+		if(args.length != 2)
+			return false;
+		if(!args[1].matches("[^\t\n]{1,256}"))
+			return false;
+		if()
+	}
+	
+	void synchronized disconnect() {
+		for(Conversation c : convSet) {
+			c.remove(u);
+		}
 		
 	}
 	

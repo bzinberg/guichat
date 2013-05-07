@@ -216,12 +216,7 @@ public class IMServer implements Runnable {
 	void disconnectUser(User u) {
 		if(u == null)
 			return;
-		Set<Conversation> uConv = u.getConversations();
-		synchronized(uConv) {
-			for(Conversation c : uConv) {
-				c.remove(u);
-			}
-		}
+		u.disconnect();
 		synchronized(users) {
 			users.remove(u);
 		}
@@ -231,10 +226,11 @@ public class IMServer implements Runnable {
 	public void run () {
 		while(true) {
 			Socket socket;
-			try { socket = serverSocket.accept(); }
+			try {
+				socket = serverSocket.accept(); 
+				new User(this, socket).start();
+			}
 			catch(IOException e) { }
-			
-			new User(this, socket).start();
 		}
 	}
 	
