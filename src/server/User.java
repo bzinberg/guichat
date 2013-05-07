@@ -159,6 +159,15 @@ public class User extends Thread {
 		return convSet.remove(conv);
 	}
 	
+	void sendInitUsersListMessage(Object[] users) {
+		StringBuilder message = new StringBuilder(NetworkConstants.INIT_USERS_LIST);
+		for (Object u : users) {
+			message.append("\t");
+			message.append(((User) u).getUsername());
+		}
+		send(message.toString());
+	}
+	
 	void sendEnteredConvMessage(Conversation conv) {
 		String message = NetworkConstants.ENTERED_CONV + "\t" + conv.toString();
 		send(message);
