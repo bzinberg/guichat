@@ -41,7 +41,7 @@ public class Conversation {
 		u.addConversation(this);
 		for (User v : userSet) {
 			if (!v.equals(u))
-				v.addUserInConversation(u, name);
+				v.sendAddedToConvMessage(u, name);
 		}
 		return true;
 	}
@@ -57,7 +57,7 @@ public class Conversation {
 		if (!b) return false;
 		for (User v : userSet) {
 			if (!v.equals(u))
-				v.removeUserInConversation(u, name);
+				v.sendRemovedFromConvMessage(u, name);
 		}
 		u.removeConversation(this);
 		return true;
@@ -79,7 +79,7 @@ public class Conversation {
 	 */
 	synchronized void sendMessage(User u, String m, int uniqueID) {
 		for (User v : userSet) {
-			v.sendMessage(u, m, uniqueID, name);
+			v.sendIMMessage(u, m, uniqueID, name);
 		}
 	}
 	

@@ -37,21 +37,39 @@ public class User extends Thread {
 	 * @param s
 	 */
 	private void send(String s) {
-		out.println(s);
-		out.flush();
+		synchronized(out) {
+			out.println(s);
+			out.flush();
+		}
 	}
 	
 	@Override
 	public void run() {
 		try {
-            for (String line = in.readLine(); line != null; line = in.readLine())
+			
+			for (String line = in.readLine(); line != null && name == null; line = in.readLine())
+				handleConnection(line);
+			for (String line = in.readLine(); line != null; line = in.readLine())
             	handleRequest(line);
 		} catch(Exception e) {
 			
 			try { in.close(); }
-			catch(IOException e) {}
+			catch(IOException ee) {}
 			out.close();
 		}
+	}
+	
+	private boolean handleConnection(String req) {
+		if(req == null)
+			return false;
+		String[] args = req.split("\t");
+		if(args.length != 2)
+			return false;
+		else if(!args[1].matches("[^\t\n]{1,256}"))
+			return false;
+		
+		name = args[1];
+		return server.connectUser(this);
 	}
 	
 	/**
@@ -68,8 +86,6 @@ public class User extends Thread {
 		String[] args = req.split("\t");
 		if(args.length == 0)
 			return false;
-		if(args[0].equals(NetworkConstants.CONNECT)) // CONNECT
-			return connect(args);
 		else if(args[0].equals(NetworkConstants.IM))
 			return im(args);
 		else if(args[0].equals(NetworkConstants.NEW_CONV))
@@ -86,19 +102,10 @@ public class User extends Thread {
 			return false;
 	}
 	
-	private boolean connect(String[] args) {
-		if(args.length != 2)
-			return false;
-		if(!args[1].matches("[^\t\n]{1,256}"))
-			return false;
-		if()
-	}
-	
-	void synchronized disconnect() {
+	synchronized void disconnectUser() {
 		for(Conversation c : convSet) {
 			c.remove(u);
 		}
-		
 	}
 	
 	/**
@@ -107,12 +114,25 @@ public class User extends Thread {
 	 * @param conv
 	 * @return true iff the user is not already in this conversation
 	 */
-	boolean addConversation(Conversation conv) {
+	synchronized boolean addConversation(Conversation conv) {
 		boolean b = convSet.add(conv);
 		if (!b) return false;
+		sendEnteredConvMessage(conv);
+		return true;
+	}
+
+	/**
+	 * remove a conversation from the list of conversations this user is in
+	 * @param conv
+	 * @return
+	 */
+	synchronized boolean removeConversation(Conversation conv) {
+		return convSet.remove(conv);
+	}
+	
+	void sendEnteredConvMessage(Conversation conv) {
 		String message = NetworkConstants.ENTERED_CONV + "\t" + conv.toString();
 		send(message);
-		return true;
 	}
 	
 	/**
@@ -120,8 +140,9 @@ public class User extends Thread {
 	 * @param u
 	 * @param convName
 	 */
-	void addUserInConversation(User u, String convName) {
-		String message = NetworkConstants.ADDED_TO_CONV + "\t" + convName;
+	void sendAddedToConvMessage(User u, String convName) {
+		String message = NetworkConstants.ADDED_TO_CONV + "\t" + u.getUsername()
+				+ "\t" + convName;
 		send(message);
 	}
 	
@@ -130,19 +151,44 @@ public class User extends Thread {
 	 * @param u
 	 * @param convName
 	 */
-	void removeUserInConversation(User u, String convName) {
+	void sendRemovedFromConvMessage(User u, String convName) {
 		String message = NetworkConstants.REMOVED_FROM_CONV + "\t" + convName;
 		send(message);
 	}
 	
+	void sendConnectedMessage(User u) {
+		String message = NetworkConstants.CONNECTED + "\t" + u.getUsername();
+		send(message);
+	}
+
+	void sendDisconnectedMessage(User u) {
+		String message = NetworkConstants.DISCONNECTED + "\t" + u.getUsername();
+		send(message);
+	}
+
 	/**
-	 * remove a conversation from the list of conversations this user is in
-	 * @param conv
-	 * @return
+	 * notify the user that a new message has been added to this conversation
+	 * @param u
+	 * @param m
+	 * @param uniqueID
+	 * @param convName
 	 */
-	boolean removeConversation(Conversation conv) {
-		boolean b = convSet.remove(conv);
-		return b;
+	void sendIMMessage(User u, String m, int messageId, String convName) {
+		String message = NetworkConstants.IM + "\t"
+				+ u.getUsername() + "\t"
+				+ convName + "\t"
+				+ messageId + "\t" +
+				m;
+		send(message);
+	}
+	
+	void sendNewConvReceiptMessage(boolean success, String convName) {
+		String message = NetworkConstants.NEW_CONV_RECEIPT + "\t"
+				+ (success ? NetworkConstants.SUCCESS : NetworkConstants.FAILURE) + "\t"
+				+ convName + "\t"
+				+ messageId + "\t"
+				+ m;
+		send(message);
 	}
 	
 	/**
@@ -155,7 +201,7 @@ public class User extends Thread {
 	
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof User) return false;
+		if (!(o instanceof User)) return false;
 		return ((User) o).getUsername().equals(name);
 	}
 	
@@ -164,20 +210,8 @@ public class User extends Thread {
 		return name.hashCode();
 	}
 	
-	boolean isInConversation(Conversation conv) {
+	synchronized boolean isInConversation(Conversation conv) {
 		return convSet.contains(conv);
-	}
-	
-	/**
-	 * notify the user that a new message has been added to this conversation
-	 * @param u
-	 * @param m
-	 * @param uniqueID
-	 * @param convName
-	 */
-	void sendMessage(User u, String m, int uniqueID, String convName) {
-		String message = NetworkConstants.IM + "\t" + name + "\t" + convName + "\t" + uniqueID + "\t" + m;
-		send(message);
 	}
 
 }

@@ -96,22 +96,28 @@ public class IMServer implements Runnable {
 				return false;
 		}
 		if(convName == null || convName.equals("")) {
+			String genConvName;
 			while(true) {
 				genConvName = String.valueOf(new Random().nextLong());
 				synchronized(conversations) {
 					if(!conversations.containsKey(genConvName)) {
-						conversations.put(convName, new Conversation(genConvName, u));
+						conversations.put(genConvName, new Conversation(genConvName, u));
 						break;
 					}
 				}
+				u.sendNewConvReceiptMessage(true, genConvName);
 			}
 		}
 		else {
 			synchronized(conversations) {
-				if(!conversations.containsKey(convName))
+				if(!conversations.containsKey(convName)) {
 					conversations.put(convName, new Conversation(convName, u));
-				else
+					u.sendNewConvReceiptMessage(true, convName);
+				}
+				else {
+					u.sendNewConvReceiptMessage(false, convName);
 					return false;
+				}
 			}
 		}
 		return true;			
@@ -146,7 +152,7 @@ public class IMServer implements Runnable {
 			conv = conversations.get(convName);
 		}
 		if(conv == null) { // No conv associated with convName.
-			u.removeUserInConversation(u, convName);
+			u.sendRemovedFromConvMessage(u, convName);
 			return false;
 		}
 		synchronized(conv) {
@@ -216,9 +222,11 @@ public class IMServer implements Runnable {
 	void disconnectUser(User u) {
 		if(u == null)
 			return;
-		u.disconnect();
+		u.disconnectUser();
 		synchronized(users) {
 			users.remove(u);
+			for(User v : users)
+				v.sendDisconnectedMessage(u);
 		}
 		u.interrupt();
 	}
@@ -251,8 +259,8 @@ public class IMServer implements Runnable {
 			added = users.add(u);
 		}
 		if(added)
-			u.sendConnectedMessage();
+			u.sendConnectedMessage(u);
 		else
-			u.sendDisconnectedMessage();
+			u.sendDisconnectedMessage(u);
 	}
 }
