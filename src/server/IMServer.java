@@ -235,7 +235,6 @@ public class IMServer implements Runnable {
 			u = users.remove(username);
 			usersArray = users.values().toArray();
 		}
-		u.removeFromAllConversations();
 		for(Object v : usersArray)
 			((User)v).sendDisconnectedMessage(u);
 	}

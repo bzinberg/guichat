@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Set;
 
 import main.NetworkConstants;
 
@@ -13,7 +14,7 @@ public class User extends Thread {
 	
 	private String name;
 	private final Socket socket;
-	private final HashSet<Conversation> conversations;
+	private final Set<Conversation> conversations;
 	private final PrintWriter out;
 	private final BufferedReader in;
 	private final IMServer server;
@@ -58,6 +59,7 @@ public class User extends Thread {
 			try { socket.close(); }
 			catch(IOException ee) {}
 			out.close();
+			removeFromAllConversations();
 			server.disconnectUser(name);
 		}
 	}
@@ -156,11 +158,10 @@ public class User extends Thread {
 		return server.removeFromConversation(name, args[1]);
 	}
 
-	synchronized void removeFromAllConversations() {
+	private synchronized void removeFromAllConversations() {
 		Object[] convCopy = conversations.toArray();
-		for(Object c : convCopy) {
-			((Conversation)c).remove(this);
-		}
+		for(Object c : convCopy)
+			server.removeFromConversation(name, ((Conversation)c).getName());
 	}
 	
 	/**
