@@ -28,18 +28,18 @@ public class IMServer implements Runnable {
 	
 	/**
 	 * Sends the message m to all clients in the conversation specified by
-	 * convName with sender name u and ID messageId.  The variable messageId
+	 * convName with sender name username and ID messageId.  The variable messageId
 	 * should be unique among all messages sent by this client to the
 	 * conversation associated with convName.
 	 * 
-	 * Fails to send message if u is null, not in users, or not in the
+	 * Fails to send message if username is null, not in users, or not in the
 	 * specified conversation or if there is no conversations associated with
 	 * convName.
 	 * 
-	 * @param u The user sending the message.
+	 * @param username The name of the User sending the message.
 	 * @param convName The string associated with the conversation to which
 	 * 		  to send the message.
-	 * @param messageId The message ID, unique among messages sent by u.
+	 * @param messageId The message ID, unique among messages sent by the User.
 	 * @param m The message string.
 	 * @return True if the message is properly sent, false otherwise.
 	 */
@@ -69,26 +69,28 @@ public class IMServer implements Runnable {
 	/**
 	 * If convName is non-null and non-empty and there is no Conversation
 	 * associated with convName in this.conversations, creates a new
-	 * Conversation with name convName containing only u and adds it to
-	 * this.conversations.  If convName is null or empty, creates a new
-	 * Conversation associated with a unique String containing only u and
-	 * adds it to this.conversations.  Sends a new conversation receipt
+	 * Conversation with name convName containing only a User with the given
+	 * username and adds it to this.conversations.  If convName is null or
+	 * empty, creates a new Conversation associated with a unique String
+	 * containing only a User with the given username and adds it to
+	 * this.conversations.  Sends a new conversation receipt
 	 * message to the client represented by u with information on whether
 	 * or not the conversation was successfully created.  newConversation
 	 * is thread-safe because it synchronizes on conversations to prevent
 	 * multiple users from creating new conversations, which could possibly
 	 * have the same name, at the same time.
 	 * 
-	 * Fails to create a new conversation if u is null or not in users or
+	 * Fails to create a new conversation if username is null or not in users or
 	 * if convName already refers to a Conversation in conversations.
 	 * 
-	 * @param u The user creating the conversation
+	 * @param username The name of the User creating the conversation
 	 * @param convName The name of the conversation to be created, or null
 	 * 		  or "" for an auto-generated name.
 	 * @return True if the conversation is properly created, false otherwise.
 	 */
 	boolean newConversation(String username, String convName) {
 		User u;
+		boolean success = false;
 		if(username == null)
 			return false;
 		synchronized(users) {
@@ -98,52 +100,49 @@ public class IMServer implements Runnable {
 		}
 		if(convName == null || convName.equals("")) {
 			String genConvName;
-			while(true) {
+			while(!success) {
 				genConvName = String.valueOf(new Random().nextLong());
 				synchronized(conversations) {
-					if(!conversations.containsKey(genConvName)) {
+					success = !conversations.containsKey(genConvName);
+					if(success)
 						conversations.put(genConvName, new Conversation(genConvName, u));
-						break;
-					}
 				}
-				u.sendNewConvReceiptMessage(true, genConvName);
+				if(success)
+					u.sendNewConvReceiptMessage(success, genConvName);
 			}
 		}
 		else {
 			synchronized(conversations) {
-				if(!conversations.containsKey(convName)) {
+				success = !conversations.containsKey(convName);
+				if(success)
 					conversations.put(convName, new Conversation(convName, u));
-					u.sendNewConvReceiptMessage(true, convName);
-				}
-				else {
-					u.sendNewConvReceiptMessage(false, convName);
-					return false;
-				}
 			}
+			u.sendNewConvReceiptMessage(success, convName);
 		}
-		return true;			
+		return success;
 	}
 	
 	/**
-	 * If there is a Conversation associated with convName, adds u to that
-	 * Conversation and sends an added to conversation message to to every
-	 * other client in this conversation, and sends to u a entered
-	 * conversation message.  If there is no Conversation associated with
-	 * convName, sends a removed from conversation message to the client
-	 * associated with u.
+	 * If there is a Conversation associated with convName, adds the User
+	 * corresponding to username to that Conversation and sends an added
+	 * to conversation message to to every other client in this conversation,
+	 * and sends to the given User a entered conversation message.  If there
+	 * is no Conversation associated with convName, sends a removed from
+	 * conversation message to the client with the given username.
 	 * 
-	 * Fails to add u to the conversation if u is null, not in users,
+	 * Fails to add the User to the conversation if username is null, not in users,
 	 * already in the conversation, or if there is no Conversation associated
 	 * with convName.  In the last case, sends a removed from conversation
-	 * message to u.
+	 * message to the client with the given username.
 	 * 
-	 * @param username The username of the user to add.
-	 * @param convName The conversation to which to add u.
-	 * @return True if u was properly added to the conversation.
+	 * @param username The name of the user to add.
+	 * @param convName The conversation to which to add the User.
+	 * @return True if the User was properly added to the conversation.
 	 */
 	boolean addToConversation(String username, String convName) {
 		Conversation conv;
 		User u;
+		boolean success = false;
 		if(username == null)
 			return false;
 		synchronized(users) {
@@ -159,29 +158,28 @@ public class IMServer implements Runnable {
 			return false;
 		}
 		synchronized(conv) {
-			if(!conv.contains(u))
+			success = !conv.contains(u);
+			if(success)
 				conv.add(u);
-			else
-				return false;
 		}
-		return true;
+		return success;
 	}
 	
 	/**
-	 * If there is a Conversation associated with convName, removes u
-	 * from the Conversation, sends a removed from conversation
-	 * message to every other User in the Conversation, and removes
-	 * the Conversation from this.conversations if the Conversation
-	 * contains no Users after removing u.
+	 * If there is a Conversation associated with convName, removes the User
+	 * with the given username from the Conversation, sends a removed from
+	 * conversation message to every other User in the Conversation, and removes
+	 * the Conversation from this.conversations if the Conversation contains
+	 * no Users after removing the User with the given username.
 	 * 
-	 * Fails to remove u from the conversation if u is null, not in
+	 * Fails to remove the User from the conversation if usename is null, not in
 	 * users, not in the conversation, or if there is no Conversation
 	 * associated with convName in conversations.
 	 * 
-	 * @param u The user to remove.
+	 * @param username The name of the User to remove.
 	 * @param convName The string corresponding to the conversation
-	 * 		  from which to remove u.
-	 * @return True if u is properly removed from the conversation,
+	 * 		  from which to remove the User.
+	 * @return True if the User is properly removed from the conversation,
 	 * 		   false otherwise.
 	 */
 	boolean removeFromConversation(String username, String convName) {
@@ -213,16 +211,15 @@ public class IMServer implements Runnable {
 	}
 	
 	/**
-	 * Removes User u from each of his conversations, sending a
-	 * removed from conversation message to every other user in
-	 * the conversation, using remove, and removing
-	 * empty conversations from this.conversations.  Removes u
-	 * from this.users.  Sends a disconnected message to all
-	 * clients if u was in users.
+	 * Removes the User with the given username from each of his conversations,
+	 * sending a removed from conversation message to every other User in
+	 * the conversation, using remove, and removing empty conversations from
+	 * this.conversations.  Removes the given User from this.users.  Sends a
+	 * disconnected message to all clients if username was in users.
 	 * 
-	 * If u is null, does nothing.
+	 * If username is null, does nothing.
 	 * 
-	 * @param u The user to disconnect.
+	 * @param username The name of the User to disconnect.
 	 */
 	void disconnectUser(String username) {
 		User u;
@@ -240,9 +237,9 @@ public class IMServer implements Runnable {
 	}
 
 	/**
-	 * Adds u to users if u is non-null.  Sends an init users list message
-	 * to u and a connected message to all other Users in u if u is not null
-	 * and not already in users.  Sends a disconnected message to u if u is
+	 * Adds u to users if u is non-null.  Sends an initial users list message
+	 * to u and a connected message to all other Users in this.users if u is not
+	 * null and not already in users.  Sends a disconnected message to u if u is
 	 * already in users.
 	 * 
 	 * @param u The User to add.

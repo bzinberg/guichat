@@ -100,7 +100,7 @@ public class Conversation {
 	}
 
 	@Override
-	public String toString() {
+	public synchronized String toString() {
 		StringBuilder ret = new StringBuilder();
 		ret.append(name);
 		for (User u : users) {

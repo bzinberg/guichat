@@ -264,6 +264,10 @@ public class User extends Thread {
 		return name;
 	}
 	
+	synchronized boolean isInConversation(Conversation conv) {
+		return conversations.contains(conv);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof User)) return false;
@@ -275,8 +279,4 @@ public class User extends Thread {
 		return name.hashCode();
 	}
 	
-	synchronized boolean isInConversation(Conversation conv) {
-		return conversations.contains(conv);
-	}
-
 }
