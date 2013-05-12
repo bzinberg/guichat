@@ -34,8 +34,10 @@ public class User extends Thread {
 	}
 	
 	/**
-	 * send the string to the given user
-	 * @param s
+	 * Sends a message to the client by printing s to this.socket,
+	 * followed by a newline.
+	 * 
+	 * @param s The message to send to the client.
 	 */
 	private void send(String s) {
 		synchronized(out) {
@@ -44,6 +46,14 @@ public class User extends Thread {
 		}
 	}
 	
+	/**
+	 * Reads from this.socket. Tries to connect the client upon encountering
+	 * a connect message by calling handleConnection. If the client has sent
+	 * a valid username, tries to process the client's request by calling handleRequest.
+	 * 
+	 * Upon Exception or disconnection, closes this.in, this.socket, and this.out,
+	 * removes this from this.server, and removes this from all conversations.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -54,6 +64,8 @@ public class User extends Thread {
             	handleRequest(line);
 		}
 		catch(Exception e) {
+		}
+		finally {
 			try { in.close(); }
 			catch(IOException ee) {}
 			try { socket.close(); }
@@ -64,13 +76,25 @@ public class User extends Thread {
 		}
 	}
 	
+	/**
+	 * Handles a connection by trying to connect the user.  Returns true if
+	 * the user is successfully connected.  Returns false if the request
+	 * does not follow the specified grammar for a connect message or if the
+	 * specified username is already taken.
+	 * 
+	 * Sets this.name to the specified username if the user is successfully
+	 * connected.
+	 * 
+	 * @param req The client's request.
+	 * @return
+	 */
 	private boolean handleConnection(String req) {
 		if(req == null)
 			return false;
-		String[] args = req.split("\t");
+		String[] args = req.split("\t", -1);
 		if(args.length != 2)
 			return false;
-		else if(!args[1].matches(NetworkConstants.USERNAME))
+		else if(!args[1].matches(NetworkConstants.NEW_USERNAME))
 			return false;
 		
 		name = args[1];
@@ -91,7 +115,7 @@ public class User extends Thread {
 	private boolean handleRequest(String req) throws InterruptedException {
 		if(req == null)
 			return false;
-		String[] args = req.split("\t");
+		String[] args = req.split("\t", -1);
 		if(args.length == 0)
 			return false;
 		else if(args[0].equals(NetworkConstants.IM))

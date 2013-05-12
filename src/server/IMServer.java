@@ -237,10 +237,15 @@ public class IMServer implements Runnable {
 	}
 
 	/**
-	 * Adds u to users if u is non-null.  Sends an initial users list message
-	 * to u and a connected message to all other Users in this.users if u is not
-	 * null and not already in users.  Sends a disconnected message to u if u is
-	 * already in users.
+	 * If u is null, returns false.
+	 * 
+	 * If u.username is not null or the empty string and is already in this.users,
+	 * sends a disconnected message to u and returns false.
+	 * 
+	 * If u.username is null or the empty string, generates a unique username and
+	 * sets u.username.  If u.username is null or the empty string or is not already
+	 * in this.users, adds u to this.users, sends an initial users list message
+	 * to u and a connected message to all other Users in this.users.
 	 * 
 	 * @param u The User to add.
 	 * @return True if u was properly added, false if u is null or
