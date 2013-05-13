@@ -25,7 +25,22 @@ public class Conversation {
 	 */
 	Conversation(String name, User u) {
 		this(name);
-		add(u);
+		users.add(u);
+		u.addConversation(this);
+	}
+	
+	/**
+	 * Creates a conversation with a given name
+	 * and two users.
+	 * @param name
+	 * @param u
+	 */
+	Conversation(String name, User u1, User u2) {
+		this(name);
+		users.add(u1);
+		users.add(u2);
+		u1.addConversation(this);
+		u2.addConversation(this);
 	}
 	
 	/**
@@ -85,6 +100,15 @@ public class Conversation {
 	
 	synchronized boolean isEmpty() {
 		return users.isEmpty();
+	}
+	
+	/**
+	 * Returns an array representation of this.users.
+	 * 
+	 * @return An array representation of this.users.
+	 */
+	synchronized Object[] toArray() {
+		return users.toArray();
 	}
 	
 	/**

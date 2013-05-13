@@ -45,14 +45,9 @@ public class IMServer implements Runnable {
 	 */
 	boolean sendMessage(String username, String convName, int messageId, String m) {
 		Conversation conv;
-		User u;
-		if(username == null)
+		User u = userByUsername(username);
+		if(u == null)
 			return false;
-		synchronized(users) {
-			if(!users.containsKey(username))
-				return false;
-			u = users.get(username);
-		}
 		synchronized(conversations) {
 			if(!conversations.containsKey(convName))
 				return false;
@@ -73,12 +68,8 @@ public class IMServer implements Runnable {
 	 * username and adds it to this.conversations.  If convName is null or
 	 * empty, creates a new Conversation associated with a unique String
 	 * containing only a User with the given username and adds it to
-	 * this.conversations.  Sends a new conversation receipt
-	 * message to the client represented by u with information on whether
-	 * or not the conversation was successfully created.  newConversation
-	 * is thread-safe because it synchronizes on conversations to prevent
-	 * multiple users from creating new conversations, which could possibly
-	 * have the same name, at the same time.
+	 * this.conversations.  Sends an entered conversation
+	 * message to the client.
 	 * 
 	 * Fails to create a new conversation if username is null or not in users or
 	 * if convName already refers to a Conversation in conversations.
@@ -86,20 +77,15 @@ public class IMServer implements Runnable {
 	 * @param username The name of the User creating the conversation
 	 * @param convName The name of the conversation to be created, or null
 	 * 		  or "" for an auto-generated name.
-	 * @return True if the conversation is properly created, false otherwise.
+	 * @return True if the conversation is successfully created; false otherwise.
 	 */
 	boolean newConversation(String username, String convName) {
-		User u;
 		boolean success = false;
-		if(username == null)
+		User u = userByUsername(username);
+		if(u == null)
 			return false;
-		synchronized(users) {
-			if(!users.containsKey(username))
-				return false;
-			u = users.get(username);
-		}
 		if(convName == null || convName.equals("")) {
-			String genConvName;
+			String genConvName = null;
 			while(!success) {
 				genConvName = String.valueOf(new Random().nextLong());
 				synchronized(conversations) {
@@ -107,17 +93,13 @@ public class IMServer implements Runnable {
 					if(success)
 						conversations.put(genConvName, new Conversation(genConvName, u));
 				}
-				if(success)
-					u.sendNewConvReceiptMessage(success, genConvName);
 			}
+			return success;
 		}
-		else {
-			synchronized(conversations) {
-				success = !conversations.containsKey(convName);
-				if(success)
-					conversations.put(convName, new Conversation(convName, u));
-			}
-			u.sendNewConvReceiptMessage(success, convName);
+		synchronized(conversations) {
+			success = !conversations.containsKey(convName);
+			if(success)
+				conversations.put(convName, new Conversation(convName, u));
 		}
 		return success;
 	}
@@ -132,8 +114,7 @@ public class IMServer implements Runnable {
 	 * 
 	 * Fails to add the User to the conversation if username is null, not in users,
 	 * already in the conversation, or if there is no Conversation associated
-	 * with convName.  In the last case, sends a removed from conversation
-	 * message to the client with the given username.
+	 * with convName.
 	 * 
 	 * @param username The name of the user to add.
 	 * @param convName The conversation to which to add the User.
@@ -141,20 +122,14 @@ public class IMServer implements Runnable {
 	 */
 	boolean addToConversation(String username, String convName) {
 		Conversation conv;
-		User u;
 		boolean success = false;
-		if(username == null)
+		User u = userByUsername(username);
+		if(u == null)
 			return false;
-		synchronized(users) {
-			if(!users.containsKey(username))
-				return false;
-			u = users.get(username);
-		}
 		synchronized(conversations) {
 			conv = conversations.get(convName);
 		}
 		if(conv == null) { // No conv associated with convName.
-			u.sendRemovedFromConvMessage(u, convName);
 			return false;
 		}
 		synchronized(conv) {
@@ -184,14 +159,9 @@ public class IMServer implements Runnable {
 	 */
 	boolean removeFromConversation(String username, String convName) {
 		Conversation conv;
-		User u;
-		if(username == null)
+		User u = userByUsername(username);
+		if(u == null)
 			return false;
-		synchronized(users) {
-			if(!users.containsKey(username))
-				return false;
-			u = users.get(username);
-		}
 		synchronized(conversations) {
 			conv = conversations.get(convName);
 		}
@@ -203,6 +173,41 @@ public class IMServer implements Runnable {
 			conv.remove(u);
 		}
 		return true;
+	}
+	
+	boolean retrieveParticipants(String username, String convName) {
+		Conversation conv;
+		User u = userByUsername(username);
+		if(u == null)
+			return false;
+		synchronized(conversations) {
+			conv = conversations.get(convName);
+		}
+		if(conv == null)
+			return false;
+		u.sendParticipantsMessage(conv.toArray());
+		return true;
+	}
+	
+	boolean twoWayConversation(String username1, String username2) {
+		boolean success = false;
+		Conversation conv;
+		User u1 = userByUsername(username1);
+		User u2 = userByUsername(username2);
+		if(u1 == null || u2 == null)
+			return false;
+		String genConvName = null;
+		while(!success) {
+			genConvName = String.valueOf(new Random().nextLong());
+			synchronized(conversations) {
+				success = !conversations.containsKey(genConvName);
+				if(success) {
+					conv = new Conversation(genConvName, u1, u2);
+					conversations.put(genConvName, conv);
+				}
+			}
+		}
+		return success;
 	}
 	
 	/**
@@ -281,6 +286,22 @@ public class IMServer implements Runnable {
 		else
 			u.sendDisconnectedMessage(u);
 		return added;
+	}
+	
+	/**
+	 * Returns the User in this.users corresponding to the given username.
+	 * Returns null if username is null or if username is not in this.users.
+	 * 
+	 * @param username The username to look up.
+	 * @return the User in this.users corresponding to the given username
+	 * 		   or null if username is null or if username is not in this.users.
+	 */
+	private User userByUsername(String username) {
+		if(username == null)
+			return null;
+		synchronized(users) {
+			return users.get(username);
+		}
 	}
 	
 	public void run () {
