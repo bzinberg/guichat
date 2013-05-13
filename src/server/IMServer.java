@@ -201,11 +201,6 @@ public class IMServer implements Runnable {
 			if(!conv.contains(u))
 				return false;
 			conv.remove(u);
-			if(conv.isEmpty()) {
-				synchronized(conversations) {
-					conversations.remove(convName);
-				}
-			}
 		}
 		return true;
 	}
@@ -254,20 +249,33 @@ public class IMServer implements Runnable {
 	boolean connectUser(User u) {
 		boolean added = false;
 		Object[] usersArray = new Object[0];
+		String username;
 		if(u == null)
 			return false;
+		username = u.getUsername();
+		if(username == null || username.equals("")) {
+			while(!added) {
+				username = String.valueOf(new Random().nextLong());
+				synchronized(users) {
+					added = !users.containsKey(username);
+					if(added) {
+						u.setUsername(username);
+						usersArray = users.values().toArray();
+						users.put(username, u);
+					}
+				}
+			}
+		}
 		synchronized(users) {
-			if(!users.containsKey(u.getUsername())) {
-				users.put(u.getUsername(), u);
+			if(!users.containsKey(username)) {
 				usersArray = users.values().toArray();
+				users.put(username, u);
 				added = true;
 			}
 		}
 		if(added) {
-			for(Object v : usersArray) {
-				if(!u.equals(v))
-					((User)v).sendConnectedMessage(u);
-			}
+			for(Object v : usersArray)
+				((User)v).sendConnectedMessage(u);
 			u.sendInitUsersListMessage(usersArray);
 		}
 		else
