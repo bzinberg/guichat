@@ -80,7 +80,8 @@ public class User extends Thread {
 	 * Handles a connection by trying to connect the user.  Returns true if
 	 * the user is successfully connected.  Returns false if the request
 	 * does not follow the specified grammar for a connect message or if the
-	 * specified username is already taken.
+	 * specified username is already taken.  If the request does not follow
+	 * the specified grammar, sends an error message to the client.
 	 * 
 	 * Sets this.name to the specified username if the user is successfully
 	 * connected.
@@ -89,13 +90,15 @@ public class User extends Thread {
 	 * @return
 	 */
 	private boolean handleConnection(String req) {
-		if(req == null)
+		if(req == null) {
+			sendErrorMessage(req);
 			return false;
+		}
 		String[] args = req.split("\t", -1);
-		if(args.length != 2)
+		if(args.length != 2 || !args[1].matches(NetworkConstants.NEW_USERNAME)) {
+			sendErrorMessage(req);
 			return false;
-		else if(!args[1].matches(NetworkConstants.NEW_USERNAME))
-			return false;
+		}
 		
 		name = args[1];
 		boolean connected = server.connectUser(this);
@@ -107,32 +110,36 @@ public class User extends Thread {
 	/**
 	 * Handles the given request and returns true.  If the request
 	 * does not follow the specified grammar or cannot be processed,
-	 * returns false.
+	 * returns false and sends an error message to the client.
 	 * 
 	 * @param req The client's request.
 	 * @return True if the request is valid and is properly executed.
 	 */
 	private boolean handleRequest(String req) throws InterruptedException {
+		boolean processed = false;
 		if(req == null)
-			return false;
-		String[] args = req.split("\t", -1);
-		if(args.length == 0)
-			return false;
-		else if(args[0].equals(NetworkConstants.IM))
-			return im(args);
-		else if(args[0].equals(NetworkConstants.NEW_CONV))
-			return newConv(args);
-		else if(args[0].equals(NetworkConstants.ADD_TO_CONV))
-			return addToConv(args);
-		else if(args[0].equals(NetworkConstants.ENTER_CONV))
-			return enterConv(args);
-		else if(args[0].equals(NetworkConstants.EXIT_CONV))
-			return exitConv(args);
-		else if(args[0].equals(NetworkConstants.DISCONNECT)) {
-			throw new InterruptedException();
+			processed = false;
+		else {
+			String[] args = req.split("\t", -1);
+			if(args.length == 0)
+				processed = false;
+			else if(args[0].equals(NetworkConstants.IM))
+				processed = im(args);
+			else if(args[0].equals(NetworkConstants.NEW_CONV))
+				processed = newConv(args);
+			else if(args[0].equals(NetworkConstants.ADD_TO_CONV))
+				processed = addToConv(args);
+			else if(args[0].equals(NetworkConstants.ENTER_CONV))
+				processed = enterConv(args);
+			else if(args[0].equals(NetworkConstants.EXIT_CONV))
+				processed = exitConv(args);
+			else if(args[0].equals(NetworkConstants.DISCONNECT)) {
+				throw new InterruptedException();
+			}
 		}
-		else
-			return false;
+		if(!processed)
+			sendErrorMessage(req);
+		return processed;
 	}
 	
 	private boolean im(String[] args) {
@@ -282,6 +289,11 @@ public class User extends Thread {
 		send(message);
 	}
 	
+	void sendErrorMessage(String m) {
+		String message = NetworkConstants.ERROR + "\t" + m;
+		send(message);
+	}
+	
 	/**
 	 * returns this user's name
 	 * @return
@@ -293,7 +305,8 @@ public class User extends Thread {
 	/**
 	 * Sets this.name to the given string.
 	 * 
-	 * Should not be called when this has been added to server.users.
+	 * Should not be called when this has been added to server.users or on
+	 * any thread other than this.
 	 * 
 	 * @param username The string to which to set this.name. Must contain no
 	 * 		  newlines or tabs and must be non-null.  Also,

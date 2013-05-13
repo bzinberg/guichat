@@ -12,6 +12,8 @@ public class NetworkConstants {
 	public static final String REMOVED_FROM_CONV = "5";
 	public static final String CONNECTED = "6";
 	public static final String DISCONNECTED = "7";
+	public static final String PARTICIPANTS = "8";
+	public static final String ERROR = "9";
 	
 	
 	public static final String CONNECT = "0";
@@ -21,6 +23,8 @@ public class NetworkConstants {
 	public static final String ENTER_CONV = "4";
 	public static final String EXIT_CONV = "5";
 	public static final String DISCONNECT = "6";
+	public static final String RETRIEVE_PARTICIPANTS = "7";
+	public static final String TWO_WAY_CONV = "8";
 
 	public static final String FAILURE = "0";
 	public static final String SUCCESS = "1";
