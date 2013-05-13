@@ -133,9 +133,12 @@ public class User extends Thread {
 				processed = enterConv(args);
 			else if(args[0].equals(NetworkConstants.EXIT_CONV))
 				processed = exitConv(args);
-			else if(args[0].equals(NetworkConstants.DISCONNECT)) {
+			else if(args[0].equals(NetworkConstants.DISCONNECT))
 				throw new InterruptedException();
-			}
+			else if(args[0].equals(NetworkConstants.RETRIEVE_PARTICIPANTS))
+				processed = retrieveParticipants(args);
+			else if(args[0].equals(NetworkConstants.TWO_WAY_CONV))
+				processed = twoWayConv(args);
 		}
 		if(!processed)
 			sendErrorMessage(req);
@@ -159,7 +162,8 @@ public class User extends Thread {
 			return false;
 		if(args[1] == null || !args[1].matches(NetworkConstants.NEW_CONV_NAME))
 			return false;
-		return server.newConversation(name, args[1]);
+		server.newConversation(name, args[1]);
+		return true;
 	}
 
 	private boolean addToConv(String[] args) {
@@ -188,6 +192,23 @@ public class User extends Thread {
 			return false;
 		return server.removeFromConversation(name, args[1]);
 	}
+
+	private boolean retrieveParticipants(String[] args) {
+		if(args == null || args.length != 2)
+			return false;
+		if(args[1] == null || !args[1].matches(NetworkConstants.CONV_NAME))
+			return false;
+		return server.retrieveParticipants(name, args[1]);
+	}
+
+	private boolean twoWayConv(String[] args) {
+		if(args == null || args.length != 2)
+			return false;
+		if(args[1] == null || !args[1].matches(NetworkConstants.USERNAME))
+			return false;
+		return server.twoWayConversation(name, args[1]);
+	}
+
 
 	private synchronized void removeFromAllConversations() {
 		Object[] convCopy = conversations.toArray();
@@ -223,7 +244,7 @@ public class User extends Thread {
 		message.append(name);
 		for (Object u : users) {
 			message.append("\t");
-			message.append(((User) u).getUsername());
+			message.append(((User)u).getUsername());
 		}
 		send(message.toString());
 	}
@@ -282,11 +303,13 @@ public class User extends Thread {
 		send(message);
 	}
 	
-	void sendNewConvReceiptMessage(boolean success, String convName) {
-		String message = NetworkConstants.NEW_CONV_RECEIPT + "\t"
-				+ (success ? NetworkConstants.SUCCESS : NetworkConstants.FAILURE) + "\t"
-				+ convName;
-		send(message);
+	void sendParticipantsMessage(Object[] users) {
+		StringBuilder message = new StringBuilder(NetworkConstants.PARTICIPANTS);
+		for (Object u : users) {
+			message.append("\t");
+			message.append(((User)u).getUsername());
+		}
+		send(message.toString());
 	}
 	
 	void sendErrorMessage(String m) {
