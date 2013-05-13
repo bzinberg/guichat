@@ -212,6 +212,8 @@ public class User extends Thread {
 	
 	void sendInitUsersListMessage(Object[] users) {
 		StringBuilder message = new StringBuilder(NetworkConstants.INIT_USERS_LIST);
+		message.append("\t");
+		message.append(name);
 		for (Object u : users) {
 			message.append("\t");
 			message.append(((User) u).getUsername());
@@ -286,6 +288,16 @@ public class User extends Thread {
 	 */
 	String getUsername() {
 		return name;
+	}
+	
+	/**
+	 * Sets this.name to the given string.
+	 * 
+	 * Should not be called when this has been added to server.users.
+	 * 
+	 */
+	void setUsername(String username) {
+		this.name = username;
 	}
 	
 	synchronized boolean isInConversation(Conversation conv) {
