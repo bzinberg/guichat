@@ -201,11 +201,6 @@ public class IMServer implements Runnable {
 			if(!conv.contains(u))
 				return false;
 			conv.remove(u);
-			if(conv.isEmpty()) {
-				synchronized(conversations) {
-					conversations.remove(convName);
-				}
-			}
 		}
 		return true;
 	}

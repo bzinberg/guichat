@@ -295,6 +295,9 @@ public class User extends Thread {
 	 * 
 	 * Should not be called when this has been added to server.users.
 	 * 
+	 * @param username The string to which to set this.name. Must contain no
+	 * 		  newlines or tabs and must be non-null.  Also,
+	 * 		  1 <=username.length() <= 256.
 	 */
 	void setUsername(String username) {
 		this.name = username;
