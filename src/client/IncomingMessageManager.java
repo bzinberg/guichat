@@ -40,9 +40,18 @@ public class IncomingMessageManager {
             while (running) {
                 try {
                     String next = in.readLine();
-                    incomingMessages.add(next);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    if(next == null) { // Server closed!
+                    	clientGUI.disconnect();
+                    	clientGUI.dispose();
+                    	
+                        ConnectWindow connectWindow = new ConnectWindow();
+                        connectWindow.setVisible(true);
+                    }
+                    else
+                    	incomingMessages.add(next);
+                } catch(IOException e) {
+                	if(!e.getMessage().equals("Socket closed")) //Disconnected.
+                		e.printStackTrace();
                 }
             }
         }

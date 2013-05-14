@@ -466,7 +466,9 @@ public class ClientGUI extends JFrame {
     void disconnect() {
         incomingMessageManager.stop();
         outgoingMessageManager.stop();
+        out.close();
         try {
+            in.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
