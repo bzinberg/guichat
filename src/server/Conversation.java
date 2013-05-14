@@ -9,8 +9,10 @@ public class Conversation {
 	private final Set<User> users;
 	
 	/**
-	 * Creates a conversation with a given name
-	 * @param name
+	 * Creates an instance of Conversation with the given name.
+	 * Sets this.name to name and initializes this.users.
+	 * 
+	 * @param name The name of this Conversation.
 	 */
 	Conversation(String name) {
 		this.name = name;
@@ -18,10 +20,13 @@ public class Conversation {
 	}
 	
 	/**
-	 * Creates a conversation with a given name
-	 * and user
-	 * @param name
-	 * @param u
+	 * Creates an instance of Conversation with the given name, containing
+	 * a given User.  Sets this.name to name, initializes this.users, adds
+	 * u to this.users, and tells u to add this to its set of conversations
+	 * (which causes an entered conversation message to be sent to u).
+	 * 
+	 * @param name The name of this Conversation.
+	 * @param u The User to be added to this Conversation.
 	 */
 	Conversation(String name, User u) {
 		this(name);
@@ -30,13 +35,22 @@ public class Conversation {
 	}
 	
 	/**
-	 * Creates a conversation with a given name
-	 * and two users.
-	 * @param name
-	 * @param u
+	 * Creates an instance of Conversation with the given name, containing
+	 * two given Users.  Sets this.name to name, initializes this.users, adds
+	 * u1 and u2 to this.users, and tells u1 and u2 to add this to their sets
+	 * of conversations (which causes entered conversation messages to be sent
+	 * to u1 and to u2).
+	 * 
+	 * Requires that u1 is not equal to u2.
+	 * 
+	 * @param name The name of this Conversation.
+	 * @param u1 One User to be added to this Conversation.
+	 * @param u2 Another User to be added to this Conversation, different from u1.
 	 */
 	Conversation(String name, User u1, User u2) {
 		this(name);
+		if(u1 == u2 || (u1 != null && u1.equals(u2)))
+			return;
 		users.add(u1);
 		users.add(u2);
 		u1.addConversation(this);
@@ -44,13 +58,16 @@ public class Conversation {
 	}
 	
 	/**
-	 * adds user u to the conversation. Notifies the user with the set of
-	 * users in the conversation. Notifies other users that the user has been
-	 * added to the conversation.
-	 * @param u
-	 * @return true iff there is no user in the conversation with same name already
+	 * If u is non-null and this.users does not already contain u, adds u to this.users,
+	 * sends an added to conversation message to every other client in this conversation,
+	 * and sends to u a entered conversation message.  Returns whether or not this.users
+	 * changed as a result of the call to add.
+	 * 
+	 * @param u The User to add to this Conversation.
+	 * @return True if u is added to this.users; false otherwise.
 	 */
 	synchronized boolean add(User u) {
+		if(u == null) return false;
 		boolean b = users.add(u);
 		if (!b) return false;
 		u.addConversation(this);
@@ -62,12 +79,15 @@ public class Conversation {
 	}
 	
 	/**
-	 * removes user u from the conversation. Notifes every user that the user
-	 * has been removed from the conversation.
-	 * @param u
-	 * @return true iff there is a user in the conversation with the same name
+	 * If u is non-null and this.users contains u, removes u from this.users and sends
+	 * a removed from conversation message to every other client in this conversation.
+	 * Returns whether or not this.users changed as a result of the call to remove.
+	 * 
+	 * @param u The User to remove from this Conversation.
+	 * @return True if u is removed from this.users; false otherwise.
 	 */
 	synchronized boolean remove(User u) {
+		if(u == null) return false;
 		boolean b = users.remove(u);
 		if (!b) return false;
 		for (User v : users) {
@@ -79,27 +99,28 @@ public class Conversation {
 	}
 	
 	/**.
-	 * @param u
-	 * @return true iff there is a user in the conversation with the same id
+	 * Returns whether or not this.users contains u.
+	 * 
+	 * @param u The User to find in this.users.
+	 * @return True if u is in this.users; false otherwise.
 	 */
 	synchronized boolean contains(User u) {
 		return users.contains(u);
 	}
 	
 	/**
-	 * Sends every user in the conversation with the message, sender, id, conversation
-	 * @param u
-	 * @param m
-	 * @param uniqueID
+	 * Sends to every User in this.users a message with the given sender,
+	 * message text, and message ID.
+	 * 
+	 * @param u The sending user, non-null.
+	 * @param m The message text.
+	 * @param messageId The message ID of this message, unique among messages sent
+	 * 		  by u.
 	 */
-	synchronized void sendMessage(User u, String m, int uniqueID) {
+	synchronized void sendMessage(User u, String m, int messageId) {
 		for (User v : users) {
-			v.sendIMMessage(u, m, uniqueID, name);
+			v.sendIMMessage(u, m, messageId, name);
 		}
-	}
-	
-	synchronized boolean isEmpty() {
-		return users.isEmpty();
 	}
 	
 	/**
@@ -112,17 +133,33 @@ public class Conversation {
 	}
 	
 	/**
-	 * @return name of the conversation
+	 * Accessor method for this.name.
+	 * 
+	 * @return this.name, the name of this Conversation.
 	 */
 	String getName() {
 		return name;
 	}
 	
+	/**
+	 * Returns an integer representation of this, given by this.name.hashCode()
+	 * if this.name is non-null and by 0 if this.name is null.
+	 * 
+	 * @return The hashCode of this.name if this.name is non-null; 0 otherwise.
+	 */
 	@Override
 	public int hashCode() {
+		if(name == null) return 0;
 		return name.hashCode();
 	}
 
+	/**
+	 * Returns as a String the conversation name and the names of the Users in
+	 * this.users, according to ENTERED_CONV_CONTENT in the server-to-client network
+	 * described in the Network Protocol section of the design document.
+	 * 
+	 * @return A (non-null) String representation of this.
+	 */
 	@Override
 	public synchronized String toString() {
 		StringBuilder ret = new StringBuilder();

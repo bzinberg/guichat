@@ -21,9 +21,11 @@ public class User extends Thread {
 	private final IMServer server;
 	
 	/**
-	 * Constructs an user object with given attributes
-	 * @param name
-	 * @param socket
+	 * Constructs an instance of User for the given server and for the client at
+	 * the given socket.
+	 * 
+	 * @param server The server to which to add this once login has been validated.
+	 * @param socket The socket on which there is a connection with the client.
 	 * @throws IOException 
 	 */
 	User(IMServer server, Socket socket) throws IOException {
@@ -88,7 +90,8 @@ public class User extends Thread {
 	 * connected.
 	 * 
 	 * @param req The client's request.
-	 * @return
+	 * @return True if the call to handleConnection resulted in adding this to
+	 * 		   this.server; false otherwise.
 	 */
 	private boolean handleConnection(String req) {
 		if(req == null) {
@@ -146,6 +149,11 @@ public class User extends Thread {
 		return processed;
 	}
 	
+	/**
+	 * Processes an im request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the message is successfully sent; false otherwise.
+	 */
 	private boolean im(String[] args) {
 		if(args == null || args.length != 4)
 			return false;
@@ -158,6 +166,12 @@ public class User extends Thread {
 		return server.sendMessage(name, args[1], Integer.parseInt(args[2]), args[3]);
 	}
 
+	/**
+	 * Processes a new conversation request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if an attempt is made by the server to set up the new conversation;
+	 * 		   false otherwise.
+	 */
 	private boolean newConv(String[] args) {
 		if(args == null || args.length != 2)
 			return false;
@@ -167,6 +181,12 @@ public class User extends Thread {
 		return true;
 	}
 
+	/**
+	 * Processes an add to conversation request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the specified client is successfully added to the specified
+	 * 		   conversation; false otherwise.
+	 */
 	private boolean addToConv(String[] args) {
 		if(args == null || args.length != 3)
 			return false;
@@ -178,6 +198,12 @@ public class User extends Thread {
 		return server.addToConversation(args[1], args[2]);
 	}
 
+	/**
+	 * Processes an enter conversation request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the client successfully enters the specified conversation;
+	 * 		   false otherwise.
+	 */
 	private boolean enterConv(String[] args) {
 		if(args == null || args.length != 2)
 			return false;
@@ -186,6 +212,12 @@ public class User extends Thread {
 		return server.addToConversation(name, args[1]);
 	}
 
+	/**
+	 * Processes an exit conversation request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the client successfully exits the specified conversation;
+	 * 		   false otherwise.
+	 */
 	private boolean exitConv(String[] args) {
 		if(args == null || args.length != 2)
 			return false;
@@ -194,6 +226,12 @@ public class User extends Thread {
 		return server.removeFromConversation(name, args[1]);
 	}
 
+	/**
+	 * Processes a retrieve participants request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the participants of the specified conversation are successfully
+	 * 		   sent to the client; false otherwise.
+	 */
 	private boolean retrieveParticipants(String[] args) {
 		if(args == null || args.length != 2)
 			return false;
@@ -202,6 +240,12 @@ public class User extends Thread {
 		return server.retrieveParticipants(name, args[1]);
 	}
 
+	/**
+	 * Processes a two-way conversation request with the given arguments.
+	 * @param args The request arguments.
+	 * @return True if the two-way conversation is successfully set up;
+	 * 		   false otherwise.
+	 */
 	private boolean twoWayConv(String[] args) {
 		if(args == null || args.length != 2)
 			return false;
@@ -210,7 +254,10 @@ public class User extends Thread {
 		return server.twoWayConversation(name, args[1]);
 	}
 
-
+	/**
+	 * Removes this from every Conversation it is a participant of (i.e., all
+	 * Conversations in this.conversations).
+	 */
 	private synchronized void removeFromAllConversations() {
 		Object[] convCopy = conversations.toArray();
 		for(Object c : convCopy)
@@ -218,10 +265,16 @@ public class User extends Thread {
 	}
 	
 	/**
-	 * add the given conversation to the user's list of conversations
-	 * and notify him of the current state of this conversation
-	 * @param conv
-	 * @return true iff the user is not already in this conversation
+	 * Adds conv to this.conversations and sends an entered conversation message to the
+	 * client corresponding to this.  (addConversation is called by conv with itself as
+	 * a parameter.  conv deals with sending added to conversation messages to its other
+	 * Users.)  Returns whether or not conv was added, i.e., whether or not this.conversations
+	 * has changed as a result of the call to addConversation.
+	 * 
+	 * Requires that conv be non-null.
+	 * 
+	 * @param conv The Conversation to add to this.conversations.
+	 * @return True if the Conversation was added to this.conversations; false otherwise.
 	 */
 	synchronized boolean addConversation(Conversation conv) {
 		boolean b = conversations.add(conv);
@@ -231,9 +284,15 @@ public class User extends Thread {
 	}
 
 	/**
-	 * remove a conversation from the list of conversations this user is in
-	 * @param conv
-	 * @return
+	 * Removes conv from this.conversations.  (removeConversation is called by conv with
+	 * itself as a parameter.  conv deals with sending removed from conversation messages
+	 * to its Users.)  Returns whether or not conv was added, i.e., whether or not
+	 * this.conversations has changed as a result of the call to addConversation.
+	 * 
+	 * Requires that conv be non-null.
+	 * 
+	 * @param conv The Conversation to remove from this.conversations.
+	 * @return True if the Conversation was removed from this.conversations; false otherwise.
 	 */
 	synchronized boolean removeConversation(Conversation conv) {
 		return conversations.remove(conv);
@@ -319,8 +378,8 @@ public class User extends Thread {
 	}
 	
 	/**
-	 * returns this user's name
-	 * @return
+	 * Accessor method for this.name.
+	 * @return this.name, the username of this client.
 	 */
 	String getUsername() {
 		return name;
@@ -339,19 +398,31 @@ public class User extends Thread {
 	void setUsername(String username) {
 		this.name = username;
 	}
-	
-	synchronized boolean isInConversation(Conversation conv) {
-		return conversations.contains(conv);
-	}
 
+	/**
+	 * Returns whether or not this is equal to o.
+	 * 
+	 * this is equal to o if o is an instance of User and has a name 
+	 * equal to this.name.
+	 * 
+	 * @return True if this is equal to o; false otherwise.
+	 */
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof User)) return false;
-		return ((User) o).getUsername().equals(name);
+		String oName = ((User) o).getUsername();
+		return oName == name || (name != null && name.equals(oName));
 	}
 	
+	/**
+	 * Returns an integer representation of this, given by this.name.hashCode()
+	 * if this.name is non-null and by 0 if this.name is null.
+	 * 
+	 * @return The hashCode of this.name if this.name is non-null; 0 otherwise.
+	 */
 	@Override
 	public int hashCode() {
+		if(name == null) return 0;
 		return name.hashCode();
 	}
 	
