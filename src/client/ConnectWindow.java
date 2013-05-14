@@ -110,7 +110,17 @@ public class ConnectWindow extends JFrame {
         mainPrompt.setText("Trying to connect to server...");
 
         String serverAdress = hostname.getText().trim();
-        int portNumber = Integer.parseInt(port.getText());
+        int portNumber;
+        try {
+            portNumber = Integer.parseInt(port.getText());
+        } catch (NumberFormatException e) {
+            dialogAndReenable("Port number must be an integer between 1 and 65535.");
+            return;
+        }
+        if(!(1 <= portNumber && portNumber <= 65535)) {
+            dialogAndReenable("Port number must be an integer between 1 and 65535.");
+            return;
+        }
 
         try {
             Socket socket = new Socket(serverAdress, portNumber);
