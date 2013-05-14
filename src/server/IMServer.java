@@ -125,36 +125,32 @@ public class IMServer implements Runnable {
 	
 	/**
 	 * If there is a Conversation associated with convName, adds the User
-	 * corresponding to username to that Conversation and sends an added
-	 * to conversation message to to every other client in this conversation,
-	 * and sends to the given User a entered conversation message.
+	 * corresponding to username to that Conversation, sends to the given User a entered
+	 * conversation message.  If the User was not already in the Conversation, sends an
+	 * added to conversation message to every other client in this Conversation.
 	 * 
 	 * Fails to add the User to the conversation if username is null, not in users,
-	 * already in the conversation, or if there is no Conversation associated
-	 * with convName.
+	 * or if there is no Conversation associated with convName.
 	 * 
 	 * @param username The name of the user to add.
 	 * @param convName The conversation to which to add the User.
-	 * @return True if the User was properly added to the conversation.
+	 * @return True if the User was properly added to the conversation or was already in
+	 * 		   the conversation.
 	 */
 	boolean addToConversation(String username, String convName) {
 		Conversation conv;
-		boolean success = false;
 		User u = userByUsername(username);
 		if(u == null)
 			return false;
 		synchronized(conversations) {
 			conv = conversations.get(convName);
 		}
-		if(conv == null) { // No conv associated with convName.
+		if(conv == null) // No conv associated with convName.
 			return false;
-		}
-		synchronized(conv) {
-			success = !conv.contains(u);
-			if(success)
-				conv.add(u);
-		}
-		return success;
+		
+		if(!conv.add(u))
+			u.sendEnteredConvMessage(conv);
+		return true;
 	}
 	
 	/**
@@ -214,7 +210,7 @@ public class IMServer implements Runnable {
 		}
 		if(conv == null)
 			return false;
-		u.sendParticipantsMessage(conv.toArray());
+		u.sendParticipantsMessage(convName, conv.toArray());
 		return true;
 	}
 	
