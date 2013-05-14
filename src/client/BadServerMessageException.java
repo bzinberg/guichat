@@ -1,13 +1,14 @@
 package client;
 
 /**
- * Wrapper around RuntimeException for errors which are due to an
+ * Wrapper for Exception for errors which are due to an
  * incomprehensible message from the server.
  */
-public class BadServerMessageException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+public class BadServerMessageException extends Exception {
 
-    public BadServerMessageException() {
+	private static final long serialVersionUID = -2000467608902561751L;
+
+	public BadServerMessageException() {
         super();
     }
 

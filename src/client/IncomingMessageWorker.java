@@ -2,6 +2,8 @@ package client;
 
 import javax.swing.SwingWorker;
 
+import network.NetworkConstants;
+
 class IncomingMessageWorker extends SwingWorker<Void, Void> {
     private String message;
 
@@ -18,74 +20,62 @@ class IncomingMessageWorker extends SwingWorker<Void, Void> {
     }
 
     public void done() {
-        String[] data = message.split("\t", 2);
-        int messageType = Integer.parseInt(data[0]);
-        String[] args;
-        switch (messageType) {
-        case 0:
-            throw new BadServerMessageException(
-                    "Received unexpected INIT_USERS_LIST message");
-        case 1:
-            args = data[1].split("\t", 4);
-            if (args.length < 4) {
-                throw new BadServerMessageException(
-                        "Received malformed IM message from server: "
-                                + message);
-            }
-            clientGUI.registerIM(args[0], args[1], args[2], args[3]);
-            break;
-        case 2:
-            args = data[1].split("\t", 2);
-            if (args.length < 2) {
-                throw new BadServerMessageException(
-                        "Received malformed ADDED_TO_CONV message from server: "
-                                + message);
-            }
-            clientGUI.tryToAddUserToConv(args[0], args[1]);
-            break;
-        case 3:
-            args = data[1].split("\t", 2);
-            if (args.length < 2) {
-                throw new BadServerMessageException(
-                        "Received malformed ENTERED_CONV message from server: "
-                                + message);
-            }
-            clientGUI.tryToEnterConv(args[0], args[1]);
-            break;
-        case 4:
-            args = data[1].split("\t", 2);
-            if (args.length < 2) {
-                throw new BadServerMessageException(
-                        "Received malformed REMOVED_FROM_CONV message from server: "
-                                + message);
-            }
-            clientGUI.tryToRemoveUserFromConv(args[0], args[1]);
-            break;
-        case 5:
-            args = new String[] { data[1] };
-            clientGUI.handleConnectedMessage(args[0]);
-            break;
-        case 6:
-            args = new String[] { data[1] };
-            clientGUI.handleDisconnectedMessage(args[0]);
-            break;
-        case 7:
-            args = data[1].split("\t", 2);
-            if (args.length < 2) {
-                throw new BadServerMessageException(
-                        "Received malformed PARTICIPANTS message from server: "
-                                + message);
-            }
-            clientGUI.handleParticipantsMessage(args[0], args[1]);
-            break;
-        case 8:
-            args = new String[] { data[1] };
-            clientGUI.handleErrorMessage(args[0]);
-            break;
-        default:
-            throw new BadServerMessageException(
-                    "Unrecognized message from server: " + message);
-        }
+    	String[] data = message.split("\t", -1);
+    	String[] args;
+    	String messageType = data[0];
+    	if(messageType.equals(NetworkConstants.INIT_USERS_LIST))
+    		clientGUI.setStatusText("Received unexpected INIT_USERS_LIST message");
+    	else if(messageType.equals(NetworkConstants.IM)) {
+    		args = data[1].split("\t", 4);
+    		if (args.length < 4) {
+    			clientGUI.setStatusText("Received malformed IM message from server: "
+    					+ message);
+    		}
+    		clientGUI.registerIM(args[0], args[1], args[2], args[3]);
+    	}
+    	else if(messageType.equals(NetworkConstants.ADDED_TO_CONV)) {
+    		args = data[1].split("\t", 2);
+    		if (args.length < 2) {
+    			clientGUI.setStatusText("Received malformed ADDED_TO_CONV message from server: "
+    					+ message);
+    		}
+    		clientGUI.tryToAddUserToConv(args[0], args[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.ENTERED_CONV)) {
+    		args = data[1].split("\t", 2);
+    		if (args.length < 2) {
+    			clientGUI.setStatusText("Received malformed ENTERED_CONV message from server: "
+    					+ message);
+    		}
+    		clientGUI.tryToEnterConv(args[0], args[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.REMOVED_FROM_CONV)) {
+    		args = data[1].split("\t", 2);
+    		if (args.length < 2) {
+    			clientGUI.setStatusText("Received malformed REMOVED_FROM_CONV message from server: "
+    					+ message);
+    		}
+    		clientGUI.tryToRemoveUserFromConv(args[0], args[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.CONNECTED)) {
+    		clientGUI.handleConnectedMessage(data[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.DISCONNECTED)) {
+    		clientGUI.handleDisconnectedMessage(data[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.PARTICIPANTS)) {
+    		args = data[1].split("\t", 2);
+    		if (args.length < 2) {
+    			clientGUI.setStatusText("Received malformed PARTICIPANTS message from server: "
+    					+ message);
+    		}
+    		clientGUI.handleParticipantsMessage(args[0], args[1]);
+    	}
+    	else if(messageType.equals(NetworkConstants.ERROR)) {
+    		clientGUI.handleErrorMessage(data[1]);
+    	}
+    	else {
+    		clientGUI.setStatusText("Unrecognized message from server: " + message);
+    	}
     }
-
 }

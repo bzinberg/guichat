@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 
 public class ConversationHistory {
     private final Map<String, List<IMMessage>> history;

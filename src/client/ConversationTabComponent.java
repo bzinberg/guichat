@@ -36,7 +36,6 @@
 package client;
 
 import javax.swing.*;
-import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
@@ -46,7 +45,8 @@ import java.awt.event.*;
  * a JButton to close the tab it belongs to
  */
 public class ConversationTabComponent extends JPanel {
-    private final JTabbedPane pane;
+	private static final long serialVersionUID = -5229158555188557196L;
+	private final JTabbedPane pane;
     private final ConversationPanel conv;
 
     public ConversationTabComponent(final JTabbedPane pane, final ConversationPanel conv) {
@@ -61,7 +61,9 @@ public class ConversationTabComponent extends JPanel {
 
         // make JLabel read titles from JTabbedPane
         JLabel label = new JLabel() {
-            public String getText() {
+			private static final long serialVersionUID = -5081167295170255071L;
+
+			public String getText() {
                 int i = pane.indexOfTabComponent(ConversationTabComponent.this);
                 if (i != -1) {
                     return pane.getTitleAt(i);
@@ -81,7 +83,9 @@ public class ConversationTabComponent extends JPanel {
     }
 
     private class TabButton extends JButton implements ActionListener {
-        public TabButton() {
+		private static final long serialVersionUID = 4394556801877921202L;
+
+		public TabButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText("close this tab");

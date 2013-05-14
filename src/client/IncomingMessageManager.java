@@ -2,8 +2,6 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.Socket;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,7 +25,7 @@ public class IncomingMessageManager {
         publisher.start();
     }
 
-    private void handleIncomingMessage(String message) {
+    private void handleIncomingMessage(String message) throws BadServerMessageException {
         IncomingMessageWorker worker = new IncomingMessageWorker(message,
                 clientGUI);
         worker.execute();
@@ -59,6 +57,8 @@ public class IncomingMessageManager {
                     handleIncomingMessage(next);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } catch (BadServerMessageException e) {
+                	e.printStackTrace();
                 }
             }
         }

@@ -1,13 +1,11 @@
 package client;
 
-import javax.swing.text.BadLocationException;
-
 public class IMMessage implements MessageToServer {
     private final String user;
     private final String message;
     private final String convName;
     private final boolean pending;
-    private final int uniqueID;
+    private final int messageId;
     private volatile boolean cancelled;
 
     public String getUser() {
@@ -26,8 +24,8 @@ public class IMMessage implements MessageToServer {
         return pending;
     }
     
-    public int getUniqueID() {
-        return uniqueID;
+    public int getMessageId() {
+        return messageId;
     }
     
     @Override
@@ -42,7 +40,7 @@ public class IMMessage implements MessageToServer {
     
     @Override
     public String getMessageText() {
-        return "1" + "\t" + convName + "\t" + uniqueID + "\t" + message;
+        return "1" + "\t" + convName + "\t" + messageId + "\t" + message;
     }
 
     public IMMessage(String _user, String _message, String _convName, boolean _pending, int _uniqueID) {
@@ -50,7 +48,7 @@ public class IMMessage implements MessageToServer {
         message = _message;
         convName = _convName;
         pending = _pending;
-        uniqueID = _uniqueID;
+        messageId = _uniqueID;
         cancelled = false;
     }
     

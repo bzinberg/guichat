@@ -1,7 +1,6 @@
 package client;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.*;
@@ -15,6 +14,8 @@ import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+
+import network.NetworkConstants;
 
 /**
  * The main class for the IM Client. Underlies the main instant messenger window
@@ -103,7 +104,7 @@ public class ClientGUI extends JFrame {
         status = new JLabel();
         status.setName("status");
         // So that the text field doesn't collapse
-        status.setText(" ");
+        setStatusText(" ");
         statusPanel = new JPanel();
         statusPanel.setName("statusPanel");
         statusPanel.setLayout(new BorderLayout());
@@ -117,7 +118,7 @@ public class ClientGUI extends JFrame {
         content.add(statusPanel);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setMinimumSize(new Dimension(650, 400));
+        this.setMinimumSize(new Dimension(700, 400));
 
         incomingMessageManager = new IncomingMessageManager(in, this);
         incomingMessageManager.start();
@@ -133,14 +134,9 @@ public class ClientGUI extends JFrame {
      *            ConversationPanel to give a close button to.
      */
     private void addCloseButton(ConversationPanel conv) {
-        int i = tabbedPane.indexOfComponent(conv);
-        if (i == -1) {
-            throw new RuntimeException(
-                    "Tried to modify a tab that doesn't exist");
-        } else {
-            tabbedPane.setTabComponentAt(i, new ConversationTabComponent(
-                    tabbedPane, conv));
-        }
+    	int i = tabbedPane.indexOfComponent(conv);
+    	tabbedPane.setTabComponentAt(i, new ConversationTabComponent(
+    			tabbedPane, conv));
     }
 
     /**
@@ -150,10 +146,8 @@ public class ClientGUI extends JFrame {
      * @param convName
      *            Name of conversation to remove
      */
-    public void removeConversationFromMap(String convName) {
-        if (conversations.containsKey(convName)) {
-            conversations.remove(convName);
-        }
+    void removeConversationFromMap(String convName) {
+    	conversations.remove(convName);
     }
 
     /**
@@ -166,9 +160,9 @@ public class ClientGUI extends JFrame {
      *            Tab-delimited list of other users in the conversation at time
      *            of initiation
      */
-    public void tryToEnterConv(String convName, String _otherUsers) {
+    void tryToEnterConv(String convName, String _otherUsers) {
         if (conversations.containsKey(convName)) {
-            status.setText("Tried to enter conversation " + convName
+            setStatusText("Tried to enter conversation " + convName
                     + ", but we're already in it.");
             return;
         }
@@ -204,11 +198,11 @@ public class ClientGUI extends JFrame {
      * @param convName
      *            Convesration to remove him from
      */
-    public void tryToRemoveUserFromConv(String username, String convName) {
+    void tryToRemoveUserFromConv(String username, String convName) {
         if (!conversations.containsKey(convName)) {
-            status.setText("Tried to remove user " + username
+            setStatusText("Tried to remove user " + username
                     + " from conversation " + convName
-                    + ", but we didn't think we were in that conversation");
+                    + ", but we are not in " + convName);
             return;
         }
 
@@ -221,9 +215,10 @@ public class ClientGUI extends JFrame {
                 panel.otherUsersModel.remove(index);
             }
         } else {
-            status.setText("Tried to remove user " + username
+            setStatusText("Tried to remove user " + username
                     + " from conversation " + convName
-                    + ", but we didn't think he was in it");
+                    + ", but " + username + " is not in "
+                    + convName);
         }
     }
 
@@ -237,9 +232,9 @@ public class ClientGUI extends JFrame {
      * @param convName
      *            Conversation to add him to
      */
-    public void tryToAddUserToConv(String username, String convName) {
+    void tryToAddUserToConv(String username, String convName) {
         if (!conversations.containsKey(convName)) {
-            status.setText("Tried to add user " + username
+            setStatusText("Tried to add user " + username
                     + " to conversation " + convName
                     + ", but we didn't think we were in that conversation");
             return;
@@ -248,7 +243,7 @@ public class ClientGUI extends JFrame {
         ConversationPanel panel = conversations.get(convName);
 
         if (panel.otherUsersSet.contains(username)) {
-            status.setText("Tried to add user " + username
+            setStatusText("Tried to add user " + username
                     + " to conversation " + convName
                     + ", but we thought he was already in it");
         } else {
@@ -264,9 +259,9 @@ public class ClientGUI extends JFrame {
      * @param username
      *            Username to add
      */
-    public void handleConnectedMessage(String username) {
+    void handleConnectedMessage(String username) {
         if (otherUsersSet.contains(username)) {
-            status.setText("Tried to register new user " + username
+            setStatusText("Tried to register new user " + username
                     + ", but we thought he was already connected to server");
             return;
         }
@@ -282,9 +277,9 @@ public class ClientGUI extends JFrame {
      * @param username
      *            Username to remove
      */
-    public void handleDisconnectedMessage(String username) {
+    void handleDisconnectedMessage(String username) {
         if (!otherUsersSet.contains(username)) {
-            status.setText("Tried to register disconnected user "
+            setStatusText("Tried to register disconnected user "
                     + username
                     + ", but we didn't think he was connected to the server in the first place");
             return;
@@ -308,9 +303,9 @@ public class ClientGUI extends JFrame {
      * @param users
      *            Tab-delimited list of users in the conversation
      */
-    public void handleParticipantsMessage(String convName, String users) {
+    void handleParticipantsMessage(String convName, String users) {
         if (!conversations.containsKey(convName)) {
-            status.setText("Tried to update participants list for conversation "
+            setStatusText("Tried to update participants list for conversation "
                     + convName
                     + ", but we didn't think we were in that conversation");
             return;
@@ -356,38 +351,38 @@ public class ClientGUI extends JFrame {
      * @param rejectedInput
      *            The bad previous message to server
      */
-    public void handleErrorMessage(String rejectedInput) {
-        status.setText("Server rejected the following message from us: "
+    void handleErrorMessage(String rejectedInput) {
+        setStatusText("Server rejected the following message from us: "
                 + rejectedInput);
     }
 
     /**
      * Takes in data about an IM message as received from the server and
-     * processes the message, updateding the GUI and logging in history as
+     * processes the message, updating the GUI and logging in history as
      * appropriate.
      * 
      * @param username
      *            Username of sender of the message
      * @param convName
      *            Name of conversation in which the message occurred
-     * @param _uniqueID
+     * @param _messageId
      *            Message ID (see design doc)
      * @param text
      *            Text of the message
      */
-    public void registerIM(String username, String convName, String _uniqueID,
+    void registerIM(String username, String convName, String _messageId,
             String text) {
         if (!conversations.containsKey(convName)) {
-            status.setText("Tried to receive message for conversation"
+            setStatusText("Tried to receive message for conversation"
                     + convName
                     + ", but we didn't think we were in that conversation");
             return;
         }
 
         ConversationPanel panel = conversations.get(convName);
-        int uniqueID = Integer.parseInt(_uniqueID);
+        int messageId = Integer.parseInt(_messageId);
         IMMessage message = new IMMessage(username, text, convName, false,
-                uniqueID);
+                messageId);
         panel.messagesDoc.receiveMessage(message);
         conversationHistory.logNew(message);
 
@@ -395,7 +390,7 @@ public class ClientGUI extends JFrame {
         // list of participants
         if (!username.equals(myUsername)
                 && !panel.otherUsersSet.contains(username)) {
-            String content = "7" + "\t" + convName;
+            String content = NetworkConstants.RETRIEVE_PARTICIPANTS + "\t" + convName;
             outgoingMessageManager.add(new DefaultMessageToServer(content));
         }
     }
@@ -403,7 +398,7 @@ public class ClientGUI extends JFrame {
     /**
      * Prompts the user to enter a new conversation.
      */
-    public void promptForNewRoom() {
+    void promptForNewRoom() {
         String name = (String) JOptionPane
                 .showInputDialog("Enter desired name of the new conversation and we will try to make it.\nIf you give an empty name then the server will autogenerate a name for you.");
         if (name == null) {
@@ -417,14 +412,14 @@ public class ClientGUI extends JFrame {
                             "Conversation name must be at most 256 characters and cannot contain tabs or newlines.");
             return;
         }
-        String messageContent = "2" + "\t" + name;
+        String messageContent = NetworkConstants.NEW_CONV + "\t" + name;
         outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
     }
 
     /**
      * Prompts the user to start a new two-way conversation.
      */
-    public void promptForTwoWayConv() {
+    void promptForTwoWayConv() {
         String username = (String) JOptionPane
                 .showInputDialog("Enter name of other participant and we will try to make a new two-way conversation:");
         if (username == null) {
@@ -439,14 +434,14 @@ public class ClientGUI extends JFrame {
                             "Username must be nonempty, at most 256 characters, and cannot contain tabs or newlines.");
             return;
         }
-        String messageContent = "8" + "\t" + username;
+        String messageContent = NetworkConstants.TWO_WAY_CONV + "\t" + username;
         outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
     }
 
     /**
      * Prompts the user to choose a conversation to join.
      */
-    public void promptToJoinConv() {
+    void promptToJoinConv() {
         String name = (String) JOptionPane
                 .showInputDialog("Enter the name of a conversation and we will try to join it:");
         if (name == null) {
@@ -461,14 +456,14 @@ public class ClientGUI extends JFrame {
                             "Conversation name must be nonempty, at most 256 characters, and cannot contain tabs or newlines.");
             return;
         }
-        String messageContent = "4" + "\t" + name;
+        String messageContent = NetworkConstants.ENTER_CONV + "\t" + name;
         outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
     }
 
     /**
      * Ceases communication with server.
      */
-    public void disconnect() {
+    void disconnect() {
         incomingMessageManager.stop();
         outgoingMessageManager.stop();
         try {
@@ -476,6 +471,17 @@ public class ClientGUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Sets the text of the status bar.
+     * 
+     * Must be called from the event dispatch thread.
+     * 
+     * @param s The new status string, non-null.
+     */
+    void setStatusText(String s) {
+    	status.setText(s);
     }
 }
 
@@ -509,11 +515,7 @@ class DisconnectListener implements ActionListener {
         clientGUI.disconnect();
         clientGUI.dispose();
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ConnectWindow connectWindow = new ConnectWindow();
-                connectWindow.setVisible(true);
-            }
-        });
+        ConnectWindow connectWindow = new ConnectWindow();
+        connectWindow.setVisible(true);
     }
 }

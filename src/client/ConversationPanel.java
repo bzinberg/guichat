@@ -1,9 +1,7 @@
 package client;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +9,8 @@ import java.util.TreeMap;
 
 import javax.swing.*;
 import javax.swing.text.*;
+
+import network.NetworkConstants;
 
 import java.awt.event.*;
 
@@ -140,7 +140,7 @@ public class ConversationPanel extends JPanel {
             message.cancel();
         }
 
-        String content = "5" + "\t" + convName;
+        String content = NetworkConstants.EXIT_CONV + "\t" + convName;
         clientGUI.outgoingMessageManager
                 .add(new DefaultMessageToServer(content));
         clientGUI.removeConversationFromMap(convName);
@@ -155,7 +155,7 @@ public class ConversationPanel extends JPanel {
             return;
         }
 
-        String content = "3" + "\t" + invitee + "\t" + convName;
+        String content = NetworkConstants.ADD_TO_CONV + "\t" + invitee + "\t" + convName;
         clientGUI.outgoingMessageManager
                 .add(new DefaultMessageToServer(content));
         inviteField.setText("");
@@ -164,10 +164,11 @@ public class ConversationPanel extends JPanel {
     public void createIMMessage() {
         String messageText = newMessage.getText();
         if (messageText.isEmpty() || messageText.contains("\t")
-                || messageText.contains("\n")) {
+                || messageText.contains("\n") || messageText.length() > 512) {
             JOptionPane
                     .showMessageDialog(clientGUI,
-                            "Your message must be nonempty and cannot contain newlines or tabs.");
+                            "Your message must be nonempty and at most 512 characters" +
+                            " and may not contain newlines or tabs.");
             return;
         }
 
@@ -175,7 +176,6 @@ public class ConversationPanel extends JPanel {
                 true, imID);
         messagesDoc.receiveMessage(message);
 
-        /* TODO also check to make sure the message stays under 512 bytes */
         clientGUI.outgoingMessageManager.add(message);
 
         imID++;
@@ -184,7 +184,8 @@ public class ConversationPanel extends JPanel {
 }
 
 class MessagesDoc extends DefaultStyledDocument {
-    public Style regular;
+	private static final long serialVersionUID = -6948091405550281782L;
+	public Style regular;
     public Style bold;
     public Style grayItal;
     public Style boldGrayItal;
@@ -226,7 +227,7 @@ class MessagesDoc extends DefaultStyledDocument {
         String message = m.getMessage() + "\n";
 
         if (m.isPending()) {
-            pending.put(m.getUniqueID(), m);
+            pending.put(m.getMessageId(), m);
             this.insertString(endOfPending, byline, boldGrayItal);
             endOfPending += byline.length();
             this.insertString(endOfPending, message, grayItal);
@@ -241,16 +242,16 @@ class MessagesDoc extends DefaultStyledDocument {
         }
     }
 
-    public synchronized void unpend(int uniqueID) throws BadLocationException {
-        if (!pending.containsKey(uniqueID)) {
-            throw new RuntimeException(
-                    "Tried to unpend a message that doesn't exist");
+    public synchronized void unpend(int messageId)
+    		throws BadLocationException, BadServerMessageException {
+        if (!pending.containsKey(messageId)) {
+            throw new BadServerMessageException("Tried to unpend a message that doesn't exist");
         }
 
-        IMMessage oldMessage = pending.get(uniqueID);
-        pending.remove(uniqueID);
+        IMMessage oldMessage = pending.get(messageId);
+        pending.remove(messageId);
         IMMessage newMessage = new IMMessage(oldMessage.getUser(),
-                oldMessage.getMessage(), convName, false, uniqueID);
+                oldMessage.getMessage(), convName, false, messageId);
 
         /* Rebuild the pending part of the message display */
         this.remove(endOfReceived, endOfPending - endOfReceived);
@@ -263,11 +264,13 @@ class MessagesDoc extends DefaultStyledDocument {
 
     public void receiveMessage(IMMessage message) {
         if (message.getUser().equals(myUsername)
-                && pending.containsKey(message.getUniqueID())) {
+                && pending.containsKey(message.getMessageId())) {
             try {
-                unpend(message.getUniqueID());
+                unpend(message.getMessageId());
             } catch (BadLocationException e) {
                 e.printStackTrace();
+            } catch (BadServerMessageException e) {
+            	e.printStackTrace();
             }
         } else {
             try {
