@@ -28,7 +28,7 @@ public class NetworkConstants {
 	public static final String ADD_TO_CONV = "3";
 	public static final String ENTER_CONV = "4";
 	public static final String EXIT_CONV = "5";
-	public static final String DISCONNECT = "6";
+	public static final String DISCONNECT = "6\t";
 	public static final String RETRIEVE_PARTICIPANTS = "7";
 	public static final String TWO_WAY_CONV = "8";
 
