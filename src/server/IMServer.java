@@ -87,7 +87,7 @@ public class IMServer implements Runnable {
 		if(convName == null || convName.equals("")) {
 			String genConvName = null;
 			while(!success) {
-				genConvName = String.valueOf(new Random().nextLong());
+				genConvName = "conversation" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 				synchronized(conversations) {
 					success = !conversations.containsKey(genConvName);
 					if(success)
@@ -286,7 +286,7 @@ public class IMServer implements Runnable {
 		username = u.getUsername();
 		if(username == null || username.equals("")) {
 			while(!added) {
-				username = String.valueOf(new Random().nextLong());
+				username = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 				synchronized(users) {
 					added = !users.containsKey(username);
 					if(added) {
