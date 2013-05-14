@@ -110,15 +110,15 @@ public class ConnectWindow extends JFrame {
         mainPrompt.setText("Trying to connect to server...");
 
         String serverAdress = hostname.getText().trim();
-        int portNumber;
-        try {
-            portNumber = Integer.parseInt(port.getText());
-        } catch (NumberFormatException e) {
-            dialogAndReenable("Port number must be an integer between 1 and 65535.");
+        String portText = port.getText();
+        if(!portText.matches("([1-9])(\\d){0,8}")) {
+            dialogAndReenable("Port number must be an integer between 1 and 65535 with no leading zeros.");
             return;
         }
+        int portNumber = Integer.parseInt(portText);
+        
         if(!(1 <= portNumber && portNumber <= 65535)) {
-            dialogAndReenable("Port number must be an integer between 1 and 65535.");
+            dialogAndReenable("Port number must be an integer between 1 and 65535 with no leading zeros.");
             return;
         }
 
