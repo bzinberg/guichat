@@ -9,7 +9,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.NetworkConstants;
+import network.NetworkConstants;
+
 
 public class TestUtility extends Thread {
 	

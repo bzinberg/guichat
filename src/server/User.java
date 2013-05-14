@@ -8,7 +8,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
-import main.NetworkConstants;
+import network.NetworkConstants;
+
 
 public class User extends Thread {
 	
