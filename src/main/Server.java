@@ -2,6 +2,8 @@ package main;
 
 import java.io.IOException;
 
+import network.NetworkConstants;
+
 import server.IMServer;
 
 /**

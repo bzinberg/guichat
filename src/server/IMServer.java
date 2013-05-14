@@ -7,6 +7,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * IMServer is a Runnable that listens to a specific socket, corresponding to a
+ * specific port and IP address, for user connections, on the thread that calls
+ * run().  The server also keeps a thread for each client, which handles
+ * the network requests from that client.  Instances of IMServer keep track of the
+ * following instance variables:
+ * 
+ *  - serverSocket is the ServerSocket on which the server listens for user
+ *    connections.
+ *  - users is a map of from String to User that keeps track of clients currently
+ *    connected to the server.  The key for a given User is the user’s name.  this.users
+ *    has no null keys or values.
+ *  - conversations is a map from String to Conversation that keeps track of all
+ *    conversations, active and empty.  The key for a given Conversation is the
+ *    conversation’s name.  this.conversations has no null keys or values.
+ *    
+ * See the Server section in the design document for more information on the
+ * IMServer class.
+ */
 public class IMServer implements Runnable {
 
 	private final Map<String, User> users;
@@ -87,7 +106,7 @@ public class IMServer implements Runnable {
 		if(convName == null || convName.equals("")) {
 			String genConvName = null;
 			while(!success) {
-				genConvName = String.valueOf(new Random().nextLong());
+				genConvName = "conversation" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 				synchronized(conversations) {
 					success = !conversations.containsKey(genConvName);
 					if(success)
@@ -108,9 +127,7 @@ public class IMServer implements Runnable {
 	 * If there is a Conversation associated with convName, adds the User
 	 * corresponding to username to that Conversation and sends an added
 	 * to conversation message to to every other client in this conversation,
-	 * and sends to the given User a entered conversation message.  If there
-	 * is no Conversation associated with convName, sends a removed from
-	 * conversation message to the client with the given username.
+	 * and sends to the given User a entered conversation message.
 	 * 
 	 * Fails to add the User to the conversation if username is null, not in users,
 	 * already in the conversation, or if there is no Conversation associated
@@ -175,6 +192,18 @@ public class IMServer implements Runnable {
 		return true;
 	}
 	
+	/**
+	 * If there is a conversation associated with convName, sends a participants
+	 * message to the client specified by username.  Returns whether or not a
+	 * participants message was successfully generated.
+	 * 
+	 * Fails and returns false if username is null or not in users or if there is
+	 * no conversation associated with convName.
+	 * 
+	 * @param username The name of the User requesting the participants message.
+	 * @param convName The name of the conversation of which to get participants.
+	 * @return True if a participants message is sent to the client; false otherwise.
+	 */
 	boolean retrieveParticipants(String username, String convName) {
 		Conversation conv;
 		User u = userByUsername(username);
@@ -189,12 +218,28 @@ public class IMServer implements Runnable {
 		return true;
 	}
 	
+	/**
+	 * If username1 and username2 are non-null, refer to Users in this.users,
+	 * and are not equal, creates a new Conversation with a unique, auto-generated
+	 * name containing only the Users with names username1 and username2 and adds
+	 * it to this.conversations.  Sends an entered conversation message to each client,
+	 * and returns true upon success.
+	 * 
+	 * If either username1 or username2 is null or does not refer to a User in
+	 * this.users, or if username1.equals(username2), returns false.
+	 * 
+	 * @param username1 The name of the one user to add to the conversation.
+	 * @param username2 The name of the another user to add to the conversation,
+	 * 		  different from username1.
+	 * @return True if the conversation between the two clients is properly created;
+	 * 		   false otherwise.
+	 */
 	boolean twoWayConversation(String username1, String username2) {
 		boolean success = false;
 		Conversation conv;
 		User u1 = userByUsername(username1);
 		User u2 = userByUsername(username2);
-		if(u1 == null || u2 == null)
+		if(u1 == null || u2 == null || u1.equals(u2))
 			return false;
 		String genConvName = null;
 		while(!success) {
@@ -260,7 +305,7 @@ public class IMServer implements Runnable {
 		username = u.getUsername();
 		if(username == null || username.equals("")) {
 			while(!added) {
-				username = String.valueOf(new Random().nextLong());
+				username = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 				synchronized(users) {
 					added = !users.containsKey(username);
 					if(added) {
@@ -304,6 +349,14 @@ public class IMServer implements Runnable {
 		}
 	}
 	
+	/**
+	 * Makes the server listen for user connections on the calling thread.  When
+	 * a user connection is received over serverSocket, creates and starts an
+	 * instance of User, which is a subclass of Thread.  (The User then waits for
+	 * a valid connect message before adding itself to this.users.)
+	 * 
+	 * Blocks until terminated.
+	 */
 	public void run () {
 		while(true) {
 			Socket socket;
