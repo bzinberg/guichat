@@ -6,6 +6,12 @@ import org.junit.Test;
 import test.TestUtility;
 import network.NetworkConstants;
 
+/**
+ * JUnit tests for the server. Sends messages to the server and checks for the
+ * correct responses.
+ * 
+ * @category no_didit
+ */
 public class ServerTest {
 
 	/**
