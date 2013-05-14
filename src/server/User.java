@@ -384,8 +384,10 @@ public class User extends Thread {
 		send(message);
 	}
 	
-	void sendParticipantsMessage(Object[] users) {
+	void sendParticipantsMessage(String convName, Object[] users) {
 		StringBuilder message = new StringBuilder(NetworkConstants.PARTICIPANTS);
+		message.append("\t");
+		message.append(convName);
 		for (Object u : users) {
 			message.append("\t");
 			message.append(((User)u).getUsername());
