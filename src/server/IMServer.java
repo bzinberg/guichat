@@ -239,7 +239,7 @@ public class IMServer implements Runnable {
 			return false;
 		String genConvName = null;
 		while(!success) {
-			genConvName = String.valueOf(new Random().nextLong());
+			genConvName = "conversation" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 			synchronized(conversations) {
 				success = !conversations.containsKey(genConvName);
 				if(success) {
