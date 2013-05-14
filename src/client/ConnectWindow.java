@@ -130,10 +130,10 @@ public class ConnectWindow extends JFrame {
             this.dispose();
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            dialogAndReenable("Unknown host, see stdout for stack trace.");
+            dialogAndReenable("Unknown host, see stderr for stack trace.");
         } catch (IOException e) {
             e.printStackTrace();
-            dialogAndReenable("I/O error, see stdout for stack trace.");
+            dialogAndReenable("I/O error, see stderr for stack trace.");
         }
     }
 

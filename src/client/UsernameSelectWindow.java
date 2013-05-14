@@ -45,12 +45,6 @@ public class UsernameSelectWindow extends JFrame {
         customUsername = new JRadioButton("Custom");
         customUsername.setName("customUsername");
         customUsername.setSelected(true);
-        customUsername.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                customUsername.setSelected(true);
-                tryToRegisterUsername();
-            }
-        });
 
         username = new JTextField();
         username.setName("username");
@@ -157,7 +151,7 @@ public class UsernameSelectWindow extends JFrame {
             messageIn = in.readLine();
         } catch (IOException e) {
             e.printStackTrace();
-            alertAndReenable("I/O error, see stdout for stack trace.");
+            alertAndReenable("I/O error, see stderr for stack trace.");
             return;
         }
 
