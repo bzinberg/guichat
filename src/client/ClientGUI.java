@@ -88,6 +88,7 @@ public class ClientGUI extends JFrame {
         content.add(tabbedPane);
         content.add(statusPanel);
 
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setMinimumSize(new Dimension(650, 400));
 
         incomingMessageManager = new IncomingMessageManager(in, this);
