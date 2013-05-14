@@ -7,6 +7,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * IMServer is a Runnable that listens to a specific socket, corresponding to a
+ * specific port and IP address, for user connections, on the thread that calls
+ * run().  The server also keeps a thread for each client, which handles
+ * the network requests from that client.  Instances of IMServer keep track of the
+ * following instance variables:
+ * 
+ *  - serverSocket is the ServerSocket on which the server listens for user
+ *    connections.
+ *  - users is a map of from String to User that keeps track of clients currently
+ *    connected to the server.  The key for a given User is the user’s name.  this.users
+ *    has no null keys or values.
+ *  - conversations is a map from String to Conversation that keeps track of all
+ *    conversations, active and empty.  The key for a given Conversation is the
+ *    conversation’s name.  this.conversations has no null keys or values.
+ *    
+ * See the Server section in the design document for more information on the
+ * IMServer class.
+ */
 public class IMServer implements Runnable {
 
 	private final Map<String, User> users;

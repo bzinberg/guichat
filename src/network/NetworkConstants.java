@@ -1,8 +1,14 @@
 package network;
 
+/**
+ * Contains constants involved in network communications.
+ *
+ */
 public class NetworkConstants {
 	
 	public static final int DEFAULT_PORT = 4445;
+	
+	// Server to client messages.
 	
 	public static final String INIT_USERS_LIST = "0";
 	public static final String IM = "1";
@@ -14,6 +20,7 @@ public class NetworkConstants {
 	public static final String PARTICIPANTS = "7";
 	public static final String ERROR = "8";
 	
+	// Client to server messages.
 	
 	public static final String CONNECT = "0";
 	//public static final String IM = "1";
@@ -25,8 +32,7 @@ public class NetworkConstants {
 	public static final String RETRIEVE_PARTICIPANTS = "7";
 	public static final String TWO_WAY_CONV = "8";
 
-	public static final String FAILURE = "0";
-	public static final String SUCCESS = "1";
+	// Regular expressions for portions of network messages.
 	
 	public static final String USERNAME = "[^\t\n]{1,256}";
 	public static final String NEW_USERNAME = "[^\t\n]{0,256}";

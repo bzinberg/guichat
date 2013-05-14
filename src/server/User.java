@@ -11,6 +11,27 @@ import java.util.Set;
 import network.NetworkConstants;
 
 
+/**
+ * Instances of User are used by the server to keep track of connections to clients.
+ * User is a subclass of Thread, and has the following instance variables:
+ * 
+ *  - socket is the socket over which the server communicates with this client.
+ *  - name is a String containing the client’s username.  When the User has been added
+ *    to its server, name is non-null, non-empty, contains at most 256 characters,
+ *    and contains no newline characters.
+ *  - conversations is a set of Conversation objects, representing all the conversations
+ *    that this client is in.
+ *  - out is a PrintWriter that writes to socket.
+ *  - in is a BufferedReader that reads from socket.
+ *  - server is the instance of IMServer that created this User, and whose users map this
+ *    will add itself to when the client specifies a valid username using a connect message.
+ *    
+ * All instance variables except this.name are final. (this.name is not final because it
+ * is specified after initialization, upon receipt of a connect message.  Once this has been
+ * added to this.server, this.name should not be changed.)
+ * 
+ * See the User section in the design document for more information on the User class.
+ */
 public class User extends Thread {
 	
 	private String name;

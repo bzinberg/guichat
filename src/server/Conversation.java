@@ -3,6 +3,19 @@ package server;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Conversations in guichat are represented by instances of Conversation.
+ * Instances of Conversation have the following instance variables:
+ * 
+ *  - users is a set of Users that represents the clients currently participating
+ *    in the conversation
+ *  - name is the name of the conversation as a String.  name is globally unique
+ *    among all conversations in any IMServer, and is the String corresponding to
+ *    the conversation in the conversations map in IMServer.
+ * 
+ * See the Conversation section in the design document for more information on
+ * the Conversation class.
+ */
 public class Conversation {
 	
 	private final String name;
