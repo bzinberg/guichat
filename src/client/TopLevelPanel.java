@@ -1,6 +1,8 @@
 package client;
 
 import java.awt.Dimension;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.*;
 
@@ -8,7 +10,7 @@ public class TopLevelPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private final JLabel otherUsersHeading;
-    private final ListModel otherUsersModel;
+    protected final DefaultListModel otherUsersModel;
     private final JList otherUsers;
     private final JScrollPane otherUsersScrollPane;
 
@@ -23,6 +25,7 @@ public class TopLevelPanel extends JPanel {
     private final JScrollPane pastConversationsScrollPane;
 
     public TopLevelPanel() {
+        
         otherUsersHeading = new JLabel("Other users:");
         otherUsersHeading.setName("otherUsersHeading");
 
@@ -90,22 +93,5 @@ public class TopLevelPanel extends JPanel {
                                 .addComponent(pastConversationsScrollPane)));
 
         this.setLayout(layout);
-    }
-
-    /* TODO remove later */
-    public static void main(final String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JTabbedPane tabbedPane = new JTabbedPane();
-                JComponent panel1 = new TopLevelPanel();
-                tabbedPane.addTab("panel1", panel1);
-                tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-
-                JFrame main = new JFrame();
-                main.add(tabbedPane);
-                main.setMinimumSize(new Dimension(600, 400));
-                main.setVisible(true);
-            }
-        });
     }
 }
