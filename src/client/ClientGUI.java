@@ -283,15 +283,15 @@ public class ClientGUI extends JFrame {
 
     public void promptForNewRoom() {
         String name = (String) JOptionPane
-                .showInputDialog("Enter desired name of the new conversation and we will try to make it:");
+                .showInputDialog("Enter desired name of the new conversation and we will try to make it.\nIf you give an empty name then the server will autogenerate a name for you.");
         if (name == null) {
             // user closed the prompt
             return;
         }
-        if (name.isEmpty() || name.contains("\t") || name.contains("\n")) {
+        if (name.contains("\t") || name.contains("\n")) {
             JOptionPane
                     .showMessageDialog(this,
-                            "Conversation name must be nonempty and cannot contain tabs or newlines.");
+                            "Conversation name cannot contain tabs or newlines.");
             return;
         }
         /* TODO check length */
