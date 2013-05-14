@@ -54,6 +54,11 @@ public class UsernameSelectWindow extends JFrame {
 
         username = new JTextField();
         username.setName("username");
+        username.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                tryToRegisterUsername();
+            }
+        });
         username.setMinimumSize(new Dimension(100, 20));
         username.setMaximumSize(new Dimension(100, 20));
 
@@ -115,6 +120,7 @@ public class UsernameSelectWindow extends JFrame {
 
         this.getRootPane().setLayout(layout);
         this.setMinimumSize(new Dimension(300, 180));
+        username.requestFocusInWindow();
     }
 
     private void tryToRegisterUsername() {
@@ -126,6 +132,11 @@ public class UsernameSelectWindow extends JFrame {
         String desiredName;
         if (customUsername.isSelected()) {
             desiredName = username.getText();
+            if (desiredName.isEmpty() || desiredName.contains("\t")
+                    || desiredName.contains("\n")) {
+                alertAndReenable("Username must be nonempty and cannot contain tabs or newlines.");
+                return;
+            }
         } else {
             desiredName = "";
         }
@@ -144,8 +155,6 @@ public class UsernameSelectWindow extends JFrame {
         String messageIn = null;
         try {
             messageIn = in.readLine();
-            // TODO remove
-            System.out.println(messageIn);
         } catch (IOException e) {
             e.printStackTrace();
             alertAndReenable("I/O error, see stdout for stack trace.");
@@ -161,11 +170,12 @@ public class UsernameSelectWindow extends JFrame {
         int messageType = Integer.parseInt(message[0]);
         if (messageType == 0) {
             // We were successfully assigned the username
-            ClientGUI clientGUI = new ClientGUI(socket, in, out, serverName, message[1].split("\t", 2)[0], message[1]);
+            ClientGUI clientGUI = new ClientGUI(socket, in, out, serverName,
+                    message[1].split("\t", 2)[0], message[1]);
             clientGUI.setVisible(true);
             this.dispose();
             return;
-        } else if (messageType == 7) {
+        } else if (messageType == 6) {
             alertAndReenable("Could not login with username " + desiredName
                     + ". It was taken.");
             return;

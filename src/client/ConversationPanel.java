@@ -58,6 +58,8 @@ public class ConversationPanel extends JPanel {
         otherUsers.setName("otherUsers");
         otherUsers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        otherUsers.addMouseListener(new DoubleClickUsernameListener(clientGUI));
+
         otherUsersScrollPane = new JScrollPane(otherUsers);
         otherUsersScrollPane.setName("otherUsersScrollPane");
 
@@ -172,7 +174,7 @@ public class ConversationPanel extends JPanel {
         IMMessage message = new IMMessage(myUsername, messageText, convName,
                 true, imID);
         messagesDoc.receiveMessage(message);
-        
+
         /* TODO also check to make sure the message stays under 512 bytes */
         clientGUI.outgoingMessageManager.add(message);
 
@@ -298,5 +300,29 @@ class SendIMListener implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         panel.createIMMessage();
+    }
+}
+
+class DoubleClickUsernameListener extends MouseAdapter {
+    /*
+     * Many thanks to Mohamed Saligh on StackOverflow for explaining how to
+     * listen for double clicks
+     */
+    private final ClientGUI clientGUI;
+
+    public DoubleClickUsernameListener(ClientGUI _clientGUI) {
+        clientGUI = _clientGUI;
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        JList list = (JList) e.getSource();
+        if (e.getClickCount() == 2) {
+            int index = list.locationToIndex(e.getPoint());
+            String username = (String) list.getModel().getElementAt(index);
+            // Request a new two-way conversation
+            String content = "8" + "\t" + username;
+            clientGUI.outgoingMessageManager.add(new DefaultMessageToServer(
+                    content));
+        }
     }
 }

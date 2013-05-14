@@ -18,6 +18,10 @@ public class IMMessage implements MessageToServer {
         return message;
     }
     
+    public String getConvName() {
+        return convName;
+    }
+    
     public boolean isPending() {
         return pending;
     }

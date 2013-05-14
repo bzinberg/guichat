@@ -35,6 +35,8 @@ public class ClientGUI extends JFrame {
 
     private final Map<String, ConversationPanel> conversations;
 
+    protected final ConversationHistory conversationHistory;
+
     private final IncomingMessageManager incomingMessageManager;
     protected final OutgoingMessageManager outgoingMessageManager;
 
@@ -66,6 +68,8 @@ public class ClientGUI extends JFrame {
         for (String username : otherUsersSet) {
             topLevelPanel.otherUsersModel.addElement(username);
         }
+        conversationHistory = new ConversationHistory(
+                topLevelPanel.pastConversationsModel, myUsername);
 
         /* Many thanks to krock on StackOverflow for this status bar idea */
         status = new JLabel();
@@ -108,9 +112,9 @@ public class ClientGUI extends JFrame {
                     tabbedPane, conv));
         }
     }
-    
+
     public void removeConversationFromMap(String convName) {
-        if(conversations.containsKey(convName)) {
+        if (conversations.containsKey(convName)) {
             conversations.remove(convName);
         }
     }
@@ -265,6 +269,7 @@ public class ClientGUI extends JFrame {
         IMMessage message = new IMMessage(username, text, convName, false,
                 uniqueID);
         panel.messagesDoc.receiveMessage(message);
+        conversationHistory.logNew(message);
 
         // If we didn't think this user was in the conversation, refresh our
         // list of participants
@@ -278,6 +283,10 @@ public class ClientGUI extends JFrame {
     public void promptForNewRoom() {
         String name = (String) JOptionPane
                 .showInputDialog("Enter desired name of the new conversation and we will try to make it:");
+        if (name == null) {
+            // user closed the prompt
+            return;
+        }
         if (name.isEmpty() || name.contains("\t") || name.contains("\n")) {
             JOptionPane
                     .showMessageDialog(this,
@@ -292,7 +301,12 @@ public class ClientGUI extends JFrame {
     public void promptForTwoWayConv() {
         String username = (String) JOptionPane
                 .showInputDialog("Enter name of other participant and we will try to make a new two-way conversation:");
-        if (username.isEmpty() || username.contains("\t") || username.contains("\n")) {
+        if (username == null) {
+            // user closed the prompt
+            return;
+        }
+        if (username.isEmpty() || username.contains("\t")
+                || username.contains("\n")) {
             JOptionPane
                     .showMessageDialog(this,
                             "Username must be nonempty and cannot contain tabs or newlines.");
@@ -302,10 +316,14 @@ public class ClientGUI extends JFrame {
         String messageContent = "8" + "\t" + username;
         outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
     }
-    
+
     public void promptToJoinConv() {
         String name = (String) JOptionPane
                 .showInputDialog("Enter name of conversation and we will try to join it:");
+        if (name == null) {
+            // user closed the prompt
+            return;
+        }
         if (name.isEmpty() || name.contains("\t") || name.contains("\n")) {
             JOptionPane
                     .showMessageDialog(this,

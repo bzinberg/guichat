@@ -3,6 +3,8 @@ package client;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +27,7 @@ public class TopLevelPanel extends JPanel {
     private final JButton disconnectButton;
 
     private final JLabel pastConversationsHeading;
-    private final ListModel pastConversationsModel;
+    protected final DefaultListModel pastConversationsModel;
     private final JList pastConversations;
     private final JScrollPane pastConversationsScrollPane;
 
@@ -38,6 +40,7 @@ public class TopLevelPanel extends JPanel {
         otherUsersModel = new DefaultListModel();
 
         otherUsers = new JList(otherUsersModel);
+        otherUsers.addMouseListener(new DoubleClickUsernameListener(clientGUI));
         otherUsers.setName("otherUsers");
         otherUsers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -59,7 +62,7 @@ public class TopLevelPanel extends JPanel {
                 clientGUI.promptForTwoWayConv();
             }
         });
-        
+
         joinConvButton = new JButton("Join Conversation");
         joinConvButton.setName("joinConvButton");
         joinConvButton.addActionListener(new ActionListener() {
@@ -84,6 +87,7 @@ public class TopLevelPanel extends JPanel {
         pastConversationsModel = new DefaultListModel();
         pastConversations = new JList(pastConversationsModel);
         pastConversations.setName("pastConversations");
+        pastConversations.addMouseListener(new DoubleClickHistoryItemListener(clientGUI));
         pastConversationsScrollPane = new JScrollPane(pastConversations);
         pastConversationsScrollPane.setName("pastConversationsScrollPane");
 
@@ -119,5 +123,33 @@ public class TopLevelPanel extends JPanel {
                                 .addComponent(pastConversationsScrollPane)));
 
         this.setLayout(layout);
+    }
+}
+
+class DoubleClickHistoryItemListener extends MouseAdapter {
+    /*
+     * Many thanks to Mohamed Saligh on StackOverflow for explaining how to
+     * listen for double clicks
+     */
+    private final ClientGUI clientGUI;
+
+    public DoubleClickHistoryItemListener(ClientGUI _clientGUI) {
+        clientGUI = _clientGUI;
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        JList list = (JList) e.getSource();
+        if (e.getClickCount() == 2) {
+            int index = list.locationToIndex(e.getPoint());
+            String conv = (String) list.getModel().getElementAt(index);
+            // Open a history view
+            JDialog dialog = new JDialog(clientGUI, "Conversation history: " + conv);
+            JTextPane view = new JTextPane(clientGUI.conversationHistory.historyDocument(conv));
+            view.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(view);
+            dialog.add(scrollPane);
+            dialog.setMinimumSize(new Dimension(300, 200));
+            dialog.setVisible(true);
+        }
     }
 }
