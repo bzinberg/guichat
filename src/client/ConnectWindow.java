@@ -96,6 +96,7 @@ public class ConnectWindow extends JFrame {
                                 .addComponent(connectButton)));
 
         this.getRootPane().setLayout(layout);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setMinimumSize(new Dimension(300, 150));
     }
 
@@ -103,7 +104,6 @@ public class ConnectWindow extends JFrame {
      * TODO Javadoc
      */
     private void tryToConnect() {
-        /* TODO Implement */
         connectButton.setEnabled(false);
         hostname.setEnabled(false);
         port.setEnabled(false);

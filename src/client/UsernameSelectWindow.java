@@ -113,6 +113,43 @@ public class UsernameSelectWindow extends JFrame {
                 .addGroup(layout.createParallelGroup().addComponent(okButton)));
 
         this.getRootPane().setLayout(layout);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowListener() {
+            public void windowOpened(WindowEvent e) {
+            }
+
+            public void windowClosing(WindowEvent e) {
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                dispose();
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ConnectWindow connectWindow = new ConnectWindow();
+                        connectWindow.setVisible(true);
+                    }
+                });
+            }
+
+            public void windowClosed(WindowEvent e) {
+            }
+
+            public void windowIconified(WindowEvent e) {
+            }
+
+            public void windowDeiconified(WindowEvent e) {
+            }
+
+            public void windowActivated(WindowEvent e) {
+            }
+
+            public void windowDeactivated(WindowEvent e) {
+            }
+        });
         this.setMinimumSize(new Dimension(300, 180));
         username.requestFocusInWindow();
     }
