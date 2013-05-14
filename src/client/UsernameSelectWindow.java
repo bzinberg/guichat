@@ -10,6 +10,7 @@ import javax.swing.*;
 public class UsernameSelectWindow extends JFrame {
     private static final long serialVersionUID = 1L;
 
+    private final Socket socket;
     private final BufferedReader in;
     private final PrintWriter out;
     private final String serverName;
@@ -26,8 +27,9 @@ public class UsernameSelectWindow extends JFrame {
 
     private final JButton okButton;
 
-    public UsernameSelectWindow(Socket socket, String _serverName)
+    public UsernameSelectWindow(Socket _socket, String _serverName)
             throws IOException {
+        socket = _socket;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
         serverName = _serverName;
@@ -159,7 +161,7 @@ public class UsernameSelectWindow extends JFrame {
         int messageType = Integer.parseInt(message[0]);
         if (messageType == 0) {
             // We were successfully assigned the username
-            ClientGUI clientGUI = new ClientGUI(in, out, serverName, message[1].split("\t", 2)[0], message[1]);
+            ClientGUI clientGUI = new ClientGUI(socket, in, out, serverName, message[1].split("\t", 2)[0], message[1]);
             clientGUI.setVisible(true);
             this.dispose();
             return;

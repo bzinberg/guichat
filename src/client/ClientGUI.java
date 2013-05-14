@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.event.*;
 
 import java.io.*;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,6 +19,7 @@ import javax.swing.border.BevelBorder;
 public class ClientGUI extends JFrame {
     private static final long serialVersionUID = 1L;
 
+    private final Socket socket;
     private final BufferedReader in;
     private final PrintWriter out;
 
@@ -34,9 +36,11 @@ public class ClientGUI extends JFrame {
     private final Map<String, ConversationPanel> conversations;
 
     private final IncomingMessageManager incomingMessageManager;
+    protected final OutgoingMessageManager outgoingMessageManager;
 
-    public ClientGUI(BufferedReader _in, PrintWriter _out, String _serverName,
-            String _myUsername, String initUserList) {
+    public ClientGUI(Socket _socket, BufferedReader _in, PrintWriter _out,
+            String _serverName, String _myUsername, String initUserList) {
+        socket = _socket;
         in = _in;
         out = _out;
         serverName = _serverName;
@@ -57,7 +61,7 @@ public class ClientGUI extends JFrame {
         tabbedPane = new JTabbedPane();
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        topLevelPanel = new TopLevelPanel();
+        topLevelPanel = new TopLevelPanel(this);
         tabbedPane.addTab("(Top Level)", topLevelPanel);
         for (String username : otherUsersSet) {
             topLevelPanel.otherUsersModel.addElement(username);
@@ -66,11 +70,12 @@ public class ClientGUI extends JFrame {
         /* Many thanks to krock on StackOverflow for this status bar idea */
         status = new JLabel();
         status.setName("status");
+        // So that the text field doesn't collapse
+        status.setText(" ");
         statusPanel = new JPanel();
         statusPanel.setName("statusPanel");
         statusPanel.setLayout(new BorderLayout());
         statusPanel.add(status, BorderLayout.SOUTH);
-        statusPanel.setMinimumSize(new Dimension(50, 20));
         statusPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
         statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
@@ -79,10 +84,13 @@ public class ClientGUI extends JFrame {
         content.add(tabbedPane);
         content.add(statusPanel);
 
-        this.setMinimumSize(new Dimension(600, 400));
+        this.setMinimumSize(new Dimension(650, 400));
 
         incomingMessageManager = new IncomingMessageManager(in, this);
         incomingMessageManager.start();
+
+        outgoingMessageManager = new OutgoingMessageManager(out);
+        outgoingMessageManager.start();
     }
 
     /**
@@ -100,6 +108,12 @@ public class ClientGUI extends JFrame {
                     tabbedPane, conv));
         }
     }
+    
+    public void removeConversationFromMap(String convName) {
+        if(conversations.containsKey(convName)) {
+            conversations.remove(convName);
+        }
+    }
 
     public void tryToEnterConv(String convName, String _otherUsers) {
         if (conversations.containsKey(convName)) {
@@ -107,10 +121,11 @@ public class ClientGUI extends JFrame {
                     + ", but we're already in it.");
             return;
         }
-        
+
         String[] otherUsers = _otherUsers.split("\t", -1);
 
-        ConversationPanel panel = new ConversationPanel(convName, myUsername);
+        ConversationPanel panel = new ConversationPanel(convName, myUsername,
+                this);
         tabbedPane.add(convName, panel);
         addCloseButton(panel);
         conversations.put(convName, panel);
@@ -124,6 +139,8 @@ public class ClientGUI extends JFrame {
         for (String username : panel.otherUsersSet) {
             panel.otherUsersModel.addElement(username);
         }
+
+        tabbedPane.setSelectedComponent(panel);
     }
 
     public void tryToRemoveUserFromConv(String username, String convName) {
@@ -197,7 +214,7 @@ public class ClientGUI extends JFrame {
 
     public void handleParticipantsMessage(String convName, String users) {
         if (!conversations.containsKey(convName)) {
-            status.setText("Tried to update participants list for conversation"
+            status.setText("Tried to update participants list for conversation "
                     + convName
                     + ", but we didn't think we were in that conversation");
             return;
@@ -242,11 +259,72 @@ public class ClientGUI extends JFrame {
                     + ", but we didn't think we were in that conversation");
             return;
         }
-        
+
         ConversationPanel panel = conversations.get(convName);
         int uniqueID = Integer.parseInt(_uniqueID);
-        IMMessage message = new IMMessage(username, text, false, uniqueID);
+        IMMessage message = new IMMessage(username, text, convName, false,
+                uniqueID);
         panel.messagesDoc.receiveMessage(message);
+
+        // If we didn't think this user was in the conversation, refresh our
+        // list of participants
+        if (!username.equals(myUsername)
+                && !panel.otherUsersSet.contains(username)) {
+            String content = "7" + "\t" + convName;
+            outgoingMessageManager.add(new DefaultMessageToServer(content));
+        }
+    }
+
+    public void promptForNewRoom() {
+        String name = (String) JOptionPane
+                .showInputDialog("Enter desired name of the new conversation and we will try to make it:");
+        if (name.isEmpty() || name.contains("\t") || name.contains("\n")) {
+            JOptionPane
+                    .showMessageDialog(this,
+                            "Conversation name must be nonempty and cannot contain tabs or newlines.");
+            return;
+        }
+        /* TODO check length */
+        String messageContent = "2" + "\t" + name;
+        outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
+    }
+
+    public void promptForTwoWayConv() {
+        String username = (String) JOptionPane
+                .showInputDialog("Enter name of other participant and we will try to make a new two-way conversation:");
+        if (username.isEmpty() || username.contains("\t") || username.contains("\n")) {
+            JOptionPane
+                    .showMessageDialog(this,
+                            "Username must be nonempty and cannot contain tabs or newlines.");
+            return;
+        }
+        /* TODO check length */
+        String messageContent = "8" + "\t" + username;
+        outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
+    }
+    
+    public void promptToJoinConv() {
+        String name = (String) JOptionPane
+                .showInputDialog("Enter name of conversation and we will try to join it:");
+        if (name.isEmpty() || name.contains("\t") || name.contains("\n")) {
+            JOptionPane
+                    .showMessageDialog(this,
+                            "Conversation name must be nonempty and cannot contain tabs or newlines.");
+            return;
+        }
+        /* TODO check length */
+        String messageContent = "4" + "\t" + name;
+        outgoingMessageManager.add(new DefaultMessageToServer(messageContent));
+    }
+
+    public void disconnect() {
+        incomingMessageManager.stop();
+        outgoingMessageManager.stop();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
@@ -259,5 +337,25 @@ class ConversationCloseListener implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         conv.close();
+    }
+}
+
+class DisconnectListener implements ActionListener {
+    private final ClientGUI clientGUI;
+
+    public DisconnectListener(ClientGUI _clientGUI) {
+        clientGUI = _clientGUI;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        clientGUI.disconnect();
+        clientGUI.dispose();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ConnectWindow connectWindow = new ConnectWindow();
+                connectWindow.setVisible(true);
+            }
+        });
     }
 }

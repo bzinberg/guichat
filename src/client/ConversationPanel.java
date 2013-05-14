@@ -12,8 +12,12 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.text.*;
 
+import java.awt.event.*;
+
 public class ConversationPanel extends JPanel {
     private static final long serialVersionUID = 1L;
+
+    private final ClientGUI clientGUI;
 
     private final JLabel otherUsersHeading;
     protected final DefaultListModel otherUsersModel;
@@ -31,11 +35,17 @@ public class ConversationPanel extends JPanel {
     private final String convName;
     protected final MessagesDoc messagesDoc;
 
+    private int imID;
+
     protected Set<String> otherUsersSet;
 
-    public ConversationPanel(String _convName, String _myUsername) {
+    public ConversationPanel(String _convName, String _myUsername,
+            ClientGUI _clientGUI) {
         convName = _convName;
         myUsername = _myUsername;
+        clientGUI = _clientGUI;
+
+        imID = 0;
 
         otherUsersSet = new HashSet<String>();
 
@@ -56,16 +66,18 @@ public class ConversationPanel extends JPanel {
 
         inviteField = new JTextField();
         inviteField.setName("inviteField");
+        inviteField.addActionListener(new InviteListener(this));
         inviteField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
 
         inviteButton = new JButton("Invite");
         inviteButton.setName("inviteButton");
+        inviteButton.addActionListener(new InviteListener(this));
 
         messages = new JTextPane();
         messages.setName("messages");
         messages.setEditable(false);
 
-        messagesDoc = new MessagesDoc(myUsername);
+        messagesDoc = new MessagesDoc(myUsername, convName);
         messages.setDocument(messagesDoc);
 
         messagesScrollPane = new JScrollPane(messages);
@@ -73,10 +85,12 @@ public class ConversationPanel extends JPanel {
 
         newMessage = new JTextField();
         newMessage.setName("newMessage");
+        newMessage.addActionListener(new SendIMListener(this));
         newMessage.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
 
         sendButton = new JButton("Send");
         sendButton.setName("sendButton");
+        sendButton.addActionListener(new SendIMListener(this));
 
         /*
          * TODO Comment briefly describing layout
@@ -120,8 +134,50 @@ public class ConversationPanel extends JPanel {
     }
 
     public void close() {
-        /* TODO Implement */
-        System.out.println("Closed conversation");
+        for (IMMessage message : messagesDoc.pending.values()) {
+            message.cancel();
+        }
+
+        String content = "5" + "\t" + convName;
+        clientGUI.outgoingMessageManager
+                .add(new DefaultMessageToServer(content));
+        clientGUI.removeConversationFromMap(convName);
+    }
+
+    public void createInviteMessage() {
+        String invitee = inviteField.getText();
+        if (invitee.isEmpty() || invitee.contains("\t")) {
+            JOptionPane
+                    .showMessageDialog(clientGUI,
+                            "Invitee's username must be nonempty and cannot contain tab characters.");
+            return;
+        }
+
+        String content = "3" + "\t" + invitee + "\t" + convName;
+        clientGUI.outgoingMessageManager
+                .add(new DefaultMessageToServer(content));
+        inviteField.setText("");
+    }
+
+    public void createIMMessage() {
+        String messageText = newMessage.getText();
+        if (messageText.isEmpty() || messageText.contains("\t")
+                || messageText.contains("\n")) {
+            JOptionPane
+                    .showMessageDialog(clientGUI,
+                            "Your message must be nonempty and cannot contain newlines or tabs.");
+            return;
+        }
+
+        IMMessage message = new IMMessage(myUsername, messageText, convName,
+                true, imID);
+        messagesDoc.receiveMessage(message);
+        
+        /* TODO also check to make sure the message stays under 512 bytes */
+        clientGUI.outgoingMessageManager.add(message);
+
+        imID++;
+        newMessage.setText("");
     }
 }
 
@@ -132,16 +188,18 @@ class MessagesDoc extends DefaultStyledDocument {
     public Style boldGrayItal;
 
     private final String myUsername;
+    private final String convName;
 
     /* Integers representing positions in the doc */
     private int endOfReceived;
     private int endOfPending;
 
     /** Maps a uniqueID to a message */
-    private Map<Integer, IMMessage> pending;
+    protected Map<Integer, IMMessage> pending;
 
-    public MessagesDoc(String _myUsername) {
+    public MessagesDoc(String _myUsername, String _convName) {
         myUsername = _myUsername;
+        convName = _convName;
 
         Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(
                 StyleContext.DEFAULT_STYLE);
@@ -190,7 +248,7 @@ class MessagesDoc extends DefaultStyledDocument {
         IMMessage oldMessage = pending.get(uniqueID);
         pending.remove(uniqueID);
         IMMessage newMessage = new IMMessage(oldMessage.getUser(),
-                oldMessage.getMessage(), false, uniqueID);
+                oldMessage.getMessage(), convName, false, uniqueID);
 
         /* Rebuild the pending part of the message display */
         this.remove(endOfReceived, endOfPending - endOfReceived);
@@ -216,5 +274,29 @@ class MessagesDoc extends DefaultStyledDocument {
                 e.printStackTrace();
             }
         }
+    }
+}
+
+class InviteListener implements ActionListener {
+    private final ConversationPanel panel;
+
+    public InviteListener(ConversationPanel _panel) {
+        panel = _panel;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        panel.createInviteMessage();
+    }
+}
+
+class SendIMListener implements ActionListener {
+    private final ConversationPanel panel;
+
+    public SendIMListener(ConversationPanel _panel) {
+        panel = _panel;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        panel.createIMMessage();
     }
 }

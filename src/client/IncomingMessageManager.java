@@ -2,6 +2,7 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -9,6 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class IncomingMessageManager {
     private final BlockingQueue<String> incomingMessages;
     private final BufferedReader in;
+    private volatile boolean running = true;
 
     ClientGUI clientGUI;
 
@@ -26,13 +28,18 @@ public class IncomingMessageManager {
     }
 
     private void handleIncomingMessage(String message) {
-        IncomingMessageWorker worker = new IncomingMessageWorker(message, clientGUI);
+        IncomingMessageWorker worker = new IncomingMessageWorker(message,
+                clientGUI);
         worker.execute();
+    }
+    
+    public void stop() {
+        running = false;
     }
 
     private class Publisher extends Thread {
         public void run() {
-            while (true) {
+            while (running) {
                 try {
                     String next = in.readLine();
                     incomingMessages.add(next);
@@ -45,7 +52,7 @@ public class IncomingMessageManager {
 
     private class Subscriber extends Thread {
         public void run() {
-            while (true) {
+            while (running) {
                 String next;
                 try {
                     next = incomingMessages.take();

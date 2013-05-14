@@ -1,6 +1,8 @@
 package client;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +10,8 @@ import javax.swing.*;
 
 public class TopLevelPanel extends JPanel {
     private static final long serialVersionUID = 1L;
+
+    private final ClientGUI clientGUI;
 
     private final JLabel otherUsersHeading;
     protected final DefaultListModel otherUsersModel;
@@ -17,6 +21,7 @@ public class TopLevelPanel extends JPanel {
     private final JPanel taskButtons;
     private final JButton newRoomButton;
     private final JButton oneOnOneButton;
+    private final JButton joinConvButton;
     private final JButton disconnectButton;
 
     private final JLabel pastConversationsHeading;
@@ -24,8 +29,9 @@ public class TopLevelPanel extends JPanel {
     private final JList pastConversations;
     private final JScrollPane pastConversationsScrollPane;
 
-    public TopLevelPanel() {
-        
+    public TopLevelPanel(ClientGUI _clientGUI) {
+        clientGUI = _clientGUI;
+
         otherUsersHeading = new JLabel("Other users:");
         otherUsersHeading.setName("otherUsersHeading");
 
@@ -40,17 +46,37 @@ public class TopLevelPanel extends JPanel {
 
         newRoomButton = new JButton("New Room");
         newRoomButton.setName("newRoomButton");
+        newRoomButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                clientGUI.promptForNewRoom();
+            }
+        });
 
         oneOnOneButton = new JButton("New One-on-One Chat");
         oneOnOneButton.setName("oneOnOneButton");
+        oneOnOneButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                clientGUI.promptForTwoWayConv();
+            }
+        });
+        
+        joinConvButton = new JButton("Join Conversation");
+        joinConvButton.setName("joinConvButton");
+        joinConvButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                clientGUI.promptToJoinConv();
+            }
+        });
 
         disconnectButton = new JButton("Disconnect");
         disconnectButton.setName("disconnectButton");
+        disconnectButton.addActionListener(new DisconnectListener(clientGUI));
 
         taskButtons = new JPanel();
         taskButtons.setLayout(new BoxLayout(taskButtons, BoxLayout.LINE_AXIS));
         taskButtons.add(newRoomButton);
         taskButtons.add(oneOnOneButton);
+        taskButtons.add(joinConvButton);
         taskButtons.add(disconnectButton);
 
         pastConversationsHeading = new JLabel("Past conversations:");
