@@ -20,7 +20,7 @@ class IncomingMessageWorker extends SwingWorker<Void, Void> {
     }
 
     public void done() {
-    	String[] data = message.split("\t", -1);
+    	String[] data = message.split("\t", 2);
     	String[] args;
     	String messageType = data[0];
     	if(messageType.equals(NetworkConstants.INIT_USERS_LIST))
