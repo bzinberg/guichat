@@ -134,14 +134,4 @@ public class ConnectWindow extends JFrame {
         connectButton.setEnabled(true);
     }
 
-    /* TODO remove later */
-    public static void main(final String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ConnectWindow main = new ConnectWindow();
-
-                main.setVisible(true);
-            }
-        });
-    }
 }
