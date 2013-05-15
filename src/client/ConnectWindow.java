@@ -8,7 +8,8 @@ import java.net.*;
 import javax.swing.*;
 
 /**
- * TODO Javadoc
+ * Window which prompts the user for parameters to connect to an IM server.
+ * Opens a UsernameSelectWindow upon success.
  */
 public class ConnectWindow extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -66,7 +67,17 @@ public class ConnectWindow extends JFrame {
         });
 
         /*
-         * TODO Comment briefly describing layout
+         * Layout:
+         * 
+         * -------------------
+         * 
+         * Server to connect to:
+         * 
+         * Hostname |=====| Port |====|
+         * 
+         * | Connect |
+         * 
+         * -------------------
          */
         GroupLayout layout = new GroupLayout(this.getRootPane());
         layout.setAutoCreateGaps(true);
@@ -101,7 +112,9 @@ public class ConnectWindow extends JFrame {
     }
 
     /**
-     * TODO Javadoc
+     * Collects information from the text fields and uses it to attempt to
+     * connect to the server. (Complains if the contents of the fields are
+     * invalid.)
      */
     private void tryToConnect() {
         connectButton.setEnabled(false);
@@ -111,13 +124,13 @@ public class ConnectWindow extends JFrame {
 
         String serverAdress = hostname.getText().trim();
         String portText = port.getText();
-        if(!portText.matches("([1-9])(\\d){0,8}")) {
+        if (!portText.matches("([1-9])(\\d){0,8}")) {
             dialogAndReenable("Port number must be an integer between 1 and 65535 with no leading zeros.");
             return;
         }
         int portNumber = Integer.parseInt(portText);
-        
-        if(!(1 <= portNumber && portNumber <= 65535)) {
+
+        if (!(1 <= portNumber && portNumber <= 65535)) {
             dialogAndReenable("Port number must be an integer between 1 and 65535 with no leading zeros.");
             return;
         }

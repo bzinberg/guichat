@@ -1,11 +1,8 @@
 package client;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -14,6 +11,10 @@ import network.NetworkConstants;
 
 import java.awt.event.*;
 
+/**
+ * Panel displaying a single conversation. In the client GUI, there will be a
+ * ConversationPanel attached to a tab for each conversation.
+ */
 public class ConversationPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
@@ -35,16 +36,34 @@ public class ConversationPanel extends JPanel {
     private final String convName;
     protected final MessagesDoc messagesDoc;
 
+    /** Unique ID for our outgoing messages (see design doc) */
     private int imID;
 
+    /**
+     * Names of other users. The names of other users are already stored in the
+     * JList otherUsers, but we include this object alongside it in order to
+     * increase efficiency (constant time rather than linear time for some of
+     * the lookup operations).
+     */
     protected Set<String> otherUsersSet;
 
+    /**
+     * Constructor for ConversationPanel.
+     * 
+     * @param _convName
+     *            Name of the conversation
+     * @param _myUsername
+     *            Name that the user has registered with the server
+     * @param _clientGUI
+     *            The parent instance of ClientGUI
+     */
     public ConversationPanel(String _convName, String _myUsername,
             ClientGUI _clientGUI) {
         convName = _convName;
         myUsername = _myUsername;
         clientGUI = _clientGUI;
 
+        // Initialize imID to zero
         imID = 0;
 
         otherUsersSet = new HashSet<String>();
@@ -95,7 +114,25 @@ public class ConversationPanel extends JPanel {
         sendButton.addActionListener(new SendIMListener(this));
 
         /*
-         * TODO Comment briefly describing layout
+         * Layout:
+         * 
+         * --------------------------------
+         * 
+         * Other users: |.. TEXT DISPLAY ..|
+         * 
+         * .............|..................|
+         * 
+         * .............|..................|
+         * 
+         * .............|..................|
+         * 
+         * Invite user: |..................|
+         * 
+         * |===========||..................|
+         * 
+         * |..|Invite|..|============|Send||
+         * 
+         * ---------------------------------
          */
         JPanel leftColumn = new JPanel();
         leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.PAGE_AXIS));
@@ -135,6 +172,12 @@ public class ConversationPanel extends JPanel {
         this.setLayout(layout);
     }
 
+    /**
+     * Cancels all pending messages in this conversation, removes this
+     * conversation from our collection of ongoing conversations, and sends an
+     * EXIT_CONV message to server to let it know that we are leaving the
+     * conversation.
+     */
     public void close() {
         for (IMMessage message : messagesDoc.pending.values()) {
             message.cancel();
@@ -146,6 +189,12 @@ public class ConversationPanel extends JPanel {
         clientGUI.removeConversationFromMap(convName);
     }
 
+    /**
+     * Invites the user whose name is in the "invite" field to this
+     * conversation. Complains if the contents of the field are invalid. Upon
+     * successfully sending the message, clears the contents of the invite
+     * field.
+     */
     public void createInviteMessage() {
         String invitee = inviteField.getText();
         if (invitee.isEmpty() || invitee.contains("\t")) {
@@ -155,20 +204,25 @@ public class ConversationPanel extends JPanel {
             return;
         }
 
-        String content = NetworkConstants.ADD_TO_CONV + "\t" + invitee + "\t" + convName;
+        String content = NetworkConstants.ADD_TO_CONV + "\t" + invitee + "\t"
+                + convName;
         clientGUI.outgoingMessageManager
                 .add(new DefaultMessageToServer(content));
         inviteField.setText("");
     }
 
+    /**
+     * Sends out an IM message according to the user input. Complains if the
+     * contents of the message field are invalid. If the contents are valid,
+     * registers the message as pending and increments imID.
+     */
     public void createIMMessage() {
         String messageText = newMessage.getText();
         if (messageText.isEmpty() || messageText.contains("\t")
                 || messageText.contains("\n") || messageText.length() > 512) {
-            JOptionPane
-                    .showMessageDialog(clientGUI,
-                            "Your message must be nonempty and at most 512 characters" +
-                            " and may not contain newlines or tabs.");
+            JOptionPane.showMessageDialog(clientGUI,
+                    "Your message must be nonempty and at most 512 characters"
+                            + " and may not contain newlines or tabs.");
             return;
         }
 
@@ -183,105 +237,10 @@ public class ConversationPanel extends JPanel {
     }
 }
 
-class MessagesDoc extends DefaultStyledDocument {
-	private static final long serialVersionUID = -6948091405550281782L;
-	public Style regular;
-    public Style bold;
-    public Style grayItal;
-    public Style boldGrayItal;
-
-    private final String myUsername;
-    private final String convName;
-
-    /* Integers representing positions in the doc */
-    private int endOfReceived;
-    private int endOfPending;
-
-    /** Maps a uniqueID to a message */
-    protected Map<Integer, IMMessage> pending;
-
-    public MessagesDoc(String _myUsername, String _convName) {
-        myUsername = _myUsername;
-        convName = _convName;
-
-        Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(
-                StyleContext.DEFAULT_STYLE);
-        regular = this.addStyle("regular", defaultStyle);
-        bold = this.addStyle("bold", regular);
-        StyleConstants.setBold(bold, true);
-        grayItal = this.addStyle("grayItal", regular);
-        StyleConstants.setForeground(grayItal, Color.GRAY);
-        StyleConstants.setItalic(grayItal, true);
-        boldGrayItal = this.addStyle("boldGrayItal", grayItal);
-        StyleConstants.setBold(boldGrayItal, true);
-
-        endOfReceived = 0;
-        endOfPending = 0;
-
-        pending = new TreeMap<Integer, IMMessage>();
-    }
-
-    public synchronized void addMessage(IMMessage m)
-            throws BadLocationException {
-        String byline = m.getUser() + ": ";
-        String message = m.getMessage() + "\n";
-
-        if (m.isPending()) {
-            pending.put(m.getMessageId(), m);
-            this.insertString(endOfPending, byline, boldGrayItal);
-            endOfPending += byline.length();
-            this.insertString(endOfPending, message, grayItal);
-            endOfPending += message.length();
-        } else {
-            this.insertString(endOfReceived, byline, bold);
-            endOfReceived += byline.length();
-            endOfPending += byline.length();
-            this.insertString(endOfReceived, message, regular);
-            endOfReceived += message.length();
-            endOfPending += message.length();
-        }
-    }
-
-    public synchronized void unpend(int messageId)
-    		throws BadLocationException, BadServerMessageException {
-        if (!pending.containsKey(messageId)) {
-            throw new BadServerMessageException("Tried to unpend a message that doesn't exist");
-        }
-
-        IMMessage oldMessage = pending.get(messageId);
-        pending.remove(messageId);
-        IMMessage newMessage = new IMMessage(oldMessage.getUser(),
-                oldMessage.getMessage(), convName, false, messageId);
-
-        /* Rebuild the pending part of the message display */
-        this.remove(endOfReceived, endOfPending - endOfReceived);
-        endOfPending = endOfReceived;
-        addMessage(newMessage);
-        for (IMMessage m : pending.values()) {
-            addMessage(m);
-        }
-    }
-
-    public void receiveMessage(IMMessage message) {
-        if (message.getUser().equals(myUsername)
-                && pending.containsKey(message.getMessageId())) {
-            try {
-                unpend(message.getMessageId());
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            } catch (BadServerMessageException e) {
-            	e.printStackTrace();
-            }
-        } else {
-            try {
-                addMessage(message);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-}
-
+/**
+ * Listener to listen for user clicking the Invite button or pressing enter in
+ * the "invite" field.
+ */
 class InviteListener implements ActionListener {
     private final ConversationPanel panel;
 
@@ -294,6 +253,10 @@ class InviteListener implements ActionListener {
     }
 }
 
+/**
+ * Listener to listen for user clicking the Send button or pressing enter in the
+ * message field.
+ */
 class SendIMListener implements ActionListener {
     private final ConversationPanel panel;
 
@@ -306,6 +269,11 @@ class SendIMListener implements ActionListener {
     }
 }
 
+/**
+ * Listener to listen for user double-clicking a list of users (be it a list of
+ * other participants in the conversation or a list of other users connected to
+ * the server at top level). Invites the clicked user to a two-way conversation.
+ */
 class DoubleClickUsernameListener extends MouseAdapter {
     /*
      * Many thanks to Mohamed Saligh on StackOverflow for explaining how to
