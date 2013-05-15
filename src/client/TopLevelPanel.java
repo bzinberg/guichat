@@ -7,9 +7,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
+/**
+ * Panel displaying top-level information, including other users connected to
+ * the server and past conversations whose history can be viewed.
+ */
 public class TopLevelPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The Client GUI that owns this panel
+     */
     private final ClientGUI clientGUI;
 
     private final JLabel otherUsersHeading;
@@ -28,6 +35,12 @@ public class TopLevelPanel extends JPanel {
     private final JList pastConversations;
     private final JScrollPane pastConversationsScrollPane;
 
+    /**
+     * Constructor for TopLevelPanel
+     * 
+     * @param _clientGUI
+     *            The Client GUI that owns this panel
+     */
     public TopLevelPanel(ClientGUI _clientGUI) {
         clientGUI = _clientGUI;
 
@@ -84,7 +97,8 @@ public class TopLevelPanel extends JPanel {
         pastConversationsModel = new DefaultListModel();
         pastConversations = new JList(pastConversationsModel);
         pastConversations.setName("pastConversations");
-        pastConversations.addMouseListener(new DoubleClickHistoryItemListener(clientGUI));
+        pastConversations.addMouseListener(new DoubleClickHistoryItemListener(
+                clientGUI));
         pastConversationsScrollPane = new JScrollPane(pastConversations);
         pastConversationsScrollPane.setName("pastConversationsScrollPane");
 
@@ -123,6 +137,11 @@ public class TopLevelPanel extends JPanel {
     }
 }
 
+/**
+ * Listener that listens for the user double-clicking on a past conversation in
+ * the list of conversation histories. Upon activation, spawns a dialog with the
+ * selected conversation history.
+ */
 class DoubleClickHistoryItemListener extends MouseAdapter {
     /*
      * Many thanks to Mohamed Saligh on StackOverflow for explaining how to
@@ -140,8 +159,10 @@ class DoubleClickHistoryItemListener extends MouseAdapter {
             int index = list.locationToIndex(e.getPoint());
             String conv = (String) list.getModel().getElementAt(index);
             // Open a history view
-            JDialog dialog = new JDialog(clientGUI, "Conversation history: " + conv);
-            JTextPane view = new JTextPane(clientGUI.conversationHistory.historyDocument(conv));
+            JDialog dialog = new JDialog(clientGUI, "Conversation history: "
+                    + conv);
+            JTextPane view = new JTextPane(
+                    clientGUI.conversationHistory.historyDocument(conv));
             view.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(view);
             dialog.add(scrollPane);

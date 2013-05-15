@@ -40,7 +40,7 @@ public class ConversationHistory {
 
     /**
      * Create a MessagesDoc to display the history of the conversation with the
-     * given name
+     * given name.
      * 
      * @param conv
      *            Name of the conversation

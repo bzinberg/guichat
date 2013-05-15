@@ -1,9 +1,7 @@
 package client;
 
 /**
- * Represents a message to the server.
- * 
- * TODO write a real Javadoc
+ * Simple default implementation of MessageToServer.
  */
 public class DefaultMessageToServer implements MessageToServer {
     private String messageText;
