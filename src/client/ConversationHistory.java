@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import javax.swing.DefaultListModel;
 
 /**
- * Stores the history of received message (not including pending messages).
+ * Stores the history of received messages (not including pending messages).
  */
 public class ConversationHistory {
     private final Map<String, List<IMMessage>> history;
