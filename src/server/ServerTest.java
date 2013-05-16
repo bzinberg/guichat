@@ -16,6 +16,8 @@ import network.NetworkConstants;
  */
 public class ServerTest {
 	
+	//TODO: IMPLEMENT THE TESTS THAT HAVE ONLY A METHOD HEADER.
+	
 	/**
 	 * Ensure that correct message is returned from the server when one user
 	 * logs in.

@@ -155,15 +155,13 @@ public class Conversation {
 	}
 	
 	/**
-	 * Returns an integer representation of this, given by this.name.hashCode()
-	 * if this.name is non-null and by 0 if this.name is null.
+	 * Returns an integer representation of this, given by this.name.hashCode().
 	 * 
-	 * @return The hashCode of this.name if this.name is non-null; 0 otherwise.
+	 * @return The hashCode of this.name.
 	 */
 	@Override
 	public int hashCode() {
-		if(name == null) return 0;
-		return name.hashCode();
+		return name.hashCode(); // Note that name != null (see constructors)
 	}
 
 	/**

@@ -10,12 +10,24 @@ import network.NetworkConstants;
 
 import org.junit.Test;
 
+import test.TestClient;
+
 /**
  * 	JUnit Tests for the Conversation class.
  * 
  *  @category no_didit
  */
 public class ConversationTest {
+	
+	/* TODO:
+	 * Two user constructor/toString test
+	 * add tests
+	 * remove tests
+	 * contains tests
+	 * sendMessage test(s) - might only be one case
+	 * toArray tests (no users, some users)
+	 * getName test
+	 */
 	
 	/**
 	 * Check that constructor with no initial users and toString work.
@@ -46,6 +58,14 @@ public class ConversationTest {
 		u.setUsername("user");
 		Conversation conv = new Conversation("conv", u);
 		assertEquals("conv\tuser", conv.toString());
+	}
+
+	/**
+	 * Expect that hashCode returns the Conversation's name's hashCode.
+	 */
+	@Test(timeout=1000) public void hashcodeTest() {
+		Conversation conv = new Conversation("conv");
+		assertEquals("conv".hashCode(), conv.hashCode());
 	}
 
 }
