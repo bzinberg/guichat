@@ -15,16 +15,6 @@ import network.NetworkConstants;
  * @category no_didit
  */
 public class ServerTest {
-
-	/* TODO:
-	 * IM
-	 * New conv
-	 * Add to conv
-	 * Enter conv
-	 * Exit conv
-	 * Disconnect
-	 * Retrieve Participants
-	 */
 	
 	/**
 	 * Ensure that correct message is returned from the server when one user
@@ -183,42 +173,238 @@ public class ServerTest {
 	 * Expect IM message to be sent to all clients in a conversation when the sender of
 	 * an IM message is in the conversation and other clients are also in the conversation.
 	 */
+	@Test(timeout=1000) public void inConvMultipleUserIMTest() {
+		
+	}
 	
 	/**
 	 * Expect IM message to be sent to the sender when the sender of an IM message
 	 * is in the conversation but no other clients are in the conversation.
 	 */
+	@Test(timeout=1000) public void inConvOneUserIMTest() {
+		
+	}
 	
 	/**
 	 * Expect error message to be sent to sending client when the sender of an IM message
 	 * is not in the conversation but is connected to the server.
 	 */
+	@Test(timeout=1000) public void notInConvIMTest() {
+		
+	}
 	
 	/**
 	 * Expect error message to be sent to sending client when the sender of an IM message
 	 * is not in the conversation or connected to the server.
 	 */
+	@Test(timeout=1000) public void notConnectedMultipleUserIMTest() {
+		
+	}
 	
 	/**
 	 * Expect error message to be sent to sending client when an IM message
 	 * is sent to a conversation that doesn't exist.
 	 */
+	@Test(timeout=1000) public void convDoesNotExistIMTest() {
+		
+	}
 	
 	/**
 	 * Expect enter conversation message to be sent to the sender of a new conversation message
 	 * when the conversation name is unused and the sender is connected to the server.
 	 */
+	@Test(timeout=1000) public void unusedNameAndConnectedNewConvTest() {
+		
+	}
 	
 	/**
-	 * Expect error message to be sent to the sender of a new conversation message
-	 * when the conversation name is unused and the sender is connected to the server.
+	 * Expect no message to be sent to the sender of a new conversation message
+	 * when the conversation name is used.
 	 */
+	@Test(timeout=1000) public void usedNameNewConvTest() {
+		
+	}
+	
+	/**
+	 * Expect no message to be sent to the sender of a new conversation message
+	 * when the conversation name is unused and the sender is disconnected to the server.
+	 */
+	@Test(timeout=1000) public void unusedNameAndDisconnectedNewConvTest() {
+		
+	}
+	
+	/**
+	 * Expect enter conversation message to be sent to a user and an added to conversation
+	 * message o every other user when a user is added to a conversation by a user who is
+	 * already in the conversation.
+	 */
+	@Test(timeout=1000) public void inConvAndConnectedAndUserExistsAndIsNotInConvAddToConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user is added to a conversation by a user who
+	 * is already in the conversation if the user he adds is also already in the conversation.
+	 */
+	@Test(timeout=1000) public void inConvAndConnectedAndUserExistsAndIsInConvAddToConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a non-existent user is added to a conversation
+	 * by a user who is already in the conversation.
+	 */
+	@Test(timeout=1000) public void inConvAndConnectedAndUserDoesNotExistAddToConvTest() {
+		
+	}
+
+	/**
+	 * Expect an error message to be sent when a user is added to a conversation by a user
+	 * who is not already in the conversation but is connected to the server.
+	 */
+	@Test(timeout=1000) public void notInConvAndConnectedAddToConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user is added to a conversation by a user
+	 * who is not connected to the server.
+	 */
+	@Test(timeout=1000) public void notConnectedAddToConvTest() {
+		
+	}
+
+	/**
+	 * Expect an entered conversation message to be sent when a user who is not in a given
+	 * conversation sends an enter conversation message requesting to join it, when
+	 * the conversation is previously empty.
+	 */
+	@Test(timeout=1000) public void notInConvEmptyEnterConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an entered conversation message to be sent when a user who is not in a given
+	 * conversation sends an enter conversation message requesting to join it, and that an
+	 * added to conversation message is sent to everyone else in the conversation, when
+	 * the conversation is previously nonempty.
+	 */
+	@Test(timeout=1000) public void notInConvNonEmptyEnterConvTest() {
+		
+	}
+
+	/**
+	 * Expect an error conversation message to be sent when a user who is already in a given
+	 * conversation sends an enter conversation message requesting to join it.
+	 */
+	@Test(timeout=1000) public void inConvEnterConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user who is not connected to the server
+	 * sends an enter conversation message.
+	 */
+	@Test(timeout=1000) public void notConnectedEnterConvTest() {
+		
+	}
+
+	/**
+	 * Expect an error message to be sent when a user tries to enter a conversation that
+	 * does not exist.
+	 */
+	@Test(timeout=1000) public void convDoesNotExistEnterConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user who is not in a given
+	 * conversation sends an exit conversation message requesting to leave it.
+	 */
+	@Test(timeout=1000) public void notInConvExitConvTest() {
+		
+	}
+
+	/**
+	 * Expect an removed from conversation message to be sent when a user who is in a given
+	 * conversation sends an exit conversation message requesting to leave it.
+	 */
+	@Test(timeout=1000) public void inConvExitConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user who is not connected to the server
+	 * sends an exit conversation message.
+	 */
+	@Test(timeout=1000) public void notConnectedExitConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user tries to exit a conversation that
+	 * does not exist.
+	 */
+	@Test(timeout=1000) public void convDoesNotExistExitConvTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user who is not connected to the server
+	 * sends a disconnect message.
+	 */
+	@Test(timeout=1000) public void notConnectedDisconnectTest() {
+		
+	}
+
+	/**
+	 * Expect a disconnected message to be sent to all other connected users when a user who is
+	 * connected to the server sends a disconnect message.
+	 */
+	@Test(timeout=1000) public void connectedDisconnectTest() {
+		
+	}
+
+	/**
+	 * Expect a participants message to be sent when a user who is connected to the server
+	 * sends a retrieve participants message to the server for a conversation that exists
+	 * but is empty.
+	 */
+	@Test(timeout=1000) public void convExistsAndEmptyRetrieveParticipantsTest() {
+		
+	}
+
+	/**
+	 * Expect a participants message to be sent when a user who is connected to the server
+	 * sends a retrieve participants message to the server for a conversation that exists
+	 * and is non-empty.
+	 */
+	@Test(timeout=1000) public void convExistsAndNonEmptyRetrieveParticipantsTest() {
+		
+	}
+
+	/**
+	 * Expect an error message to be sent when a user who is connected to the server
+	 * sends a retrieve participants message to the server for a conversation that does not
+	 * exist.
+	 */
+	@Test(timeout=1000) public void convDoesNotExistRetrieveParticipantsTest() {
+		
+	}
+	
+	/**
+	 * Expect an error message to be sent when a user who is not connected to the server
+	 * sends a retrieve participants message to the server.
+	 */
+	@Test(timeout=1000) public void notConnectedRetrieveParticipantsTest() {
+		
+	}
 	
 	/**
 	 * Expect entered conversation messages to be returned when a user sends a two way
 	 * conversation message requesting a conversation with another connected user.
 	 */
-	@Test(timeout=1000) public void twoWayConvBothConnectedTest() {
+	@Test(timeout=1000) public void bothConnectedTwoWayConvTest() {
 		IMServer server = null;
 		TestClient client1 = null;
 		TestClient client2 = null;
@@ -271,7 +457,7 @@ public class ServerTest {
 	 * sent, user sending the message is connected, but the username sent
 	 * in the message is not connected.
 	 */
-	@Test(timeout=1000) public void twoWayConvUser1ConnectedTest() {
+	@Test(timeout=1000) public void user1ConnectedTwoWayConvTest() {
 		IMServer server = null;
 		TestClient client = null;
 		Thread serverThread = null;
@@ -306,7 +492,7 @@ public class ServerTest {
 	 * sent, the user sending the message is not connected, but the username
 	 * sent in the message is connected.
 	 */
-	@Test(timeout=1000) public void twoWayConvUser2ConnectedTest() {
+	@Test(timeout=1000) public void user2ConnectedTwoWayConvTest() {
 		IMServer server = null;
 		TestClient client1 = null;
 		TestClient client2 = null;
@@ -347,7 +533,7 @@ public class ServerTest {
 	 * sent, the user sending the message is not connected, and the username
 	 * sent in the message is not connected.
 	 */
-	@Test(timeout=1000) public void twoWayConvNeitherConnectedTest() {
+	@Test(timeout=1000) public void neitherConnectedTwoWayConvTest() {
 		IMServer server = null;
 		TestClient client = null;
 		Thread serverThread = null;
@@ -379,7 +565,7 @@ public class ServerTest {
 	 * Expect error message to be returned when two way conv message is
 	 * sent, both users are connected, and both users have the same name.
 	 */
-	@Test(timeout=1000) public void twoWayConvSameNameTest() {
+	@Test(timeout=1000) public void sameNameTwoWayConvTest() {
 		IMServer server = null;
 		TestClient client1 = null;
 		TestClient client2 = null;

@@ -77,5 +77,15 @@ public class TestClient {
 		out.println(s);
 		out.flush();
 	}
+	
+	/**
+	 * Tells whether the TestClient's input stream is ready to be read.
+	 * 
+	 * @return True if the server has sent anything to the socket; false otherwise.
+	 * @throws IOException
+	 */
+	public boolean ready() throws IOException {
+		return in.ready();
+	}
 
 }
