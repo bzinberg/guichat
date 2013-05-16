@@ -346,6 +346,19 @@ public class IMServer implements Runnable {
 	}
 	
 	/**
+	 * Close the server closing this.serverSocket and
+	 * interrupting all Users in this.users.
+	 * 
+	 * @throws IOException
+	 */
+	void close() throws IOException {
+		serverSocket.close();
+		for(User u : users.values()) {
+			u.interrupt();
+		}
+	}
+	
+	/**
 	 * Makes the server listen for user connections on the calling thread.  When
 	 * a user connection is received over serverSocket, creates and starts an
 	 * instance of User, which is a subclass of Thread.  (The User then waits for
@@ -355,12 +368,12 @@ public class IMServer implements Runnable {
 	 */
 	public void run () {
 		while(true) {
-			Socket socket;
+			Socket socket = null;
 			try {
 				socket = serverSocket.accept(); 
 				new User(this, socket).start();
+			} catch(IOException e) {
 			}
-			catch(IOException e) { }
 		}
 	}
 }

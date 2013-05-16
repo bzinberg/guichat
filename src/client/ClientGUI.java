@@ -196,7 +196,7 @@ public class ClientGUI extends JFrame {
      * @param username
      *            Username to remove
      * @param convName
-     *            Convesration to remove him from
+     *            Conversation to remove him from
      */
     void tryToRemoveUserFromConv(String username, String convName) {
         if (!conversations.containsKey(convName)) {
