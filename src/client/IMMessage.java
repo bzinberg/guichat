@@ -1,45 +1,72 @@
 package client;
 
+import network.NetworkConstants;
+
 /**
  * Represents an IM message. Has a data field to indicate whether it is pending.
  * Implements MessageToServer, so <tt>IMMessage</tt>s can be cancelled.
  */
 public class IMMessage implements MessageToServer {
-    private final String user;
+    private final String username;
     private final String message;
     private final String convName;
     private final boolean pending;
-    private final int messageID;
-    private volatile boolean cancelled;
+    private final int messageId;
+    private volatile boolean canceled;
 
-    public String getUser() {
-        return user;
+    /**
+     * Accessor method for username.
+     * 
+     * @return username.
+     */
+    public String getUsername() {
+        return username;
     }
 
+    /**
+     * Accessor method for message.
+     * 
+     * @return message.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Accessor method for convName.
+     * 
+     * @return convName.
+     */
     public String getConvName() {
         return convName;
     }
 
+    /**
+     * Returns whether or not this message is pending.  True if this.pending is
+     * true; false otherwise.
+     * 
+     * @return True if this message is pending; false otherwise.
+     */
     public boolean isPending() {
         return pending;
     }
 
-    public int getMessageID() {
-        return messageID;
+    /**
+     * Accessor method for messageId.
+     * 
+     * @return messageId.
+     */
+    public int getMessageId() {
+        return messageId;
     }
 
-    @Override
     public void cancel() {
-        cancelled = true;
+    	canceled = true;
     }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
+
+    public boolean isCanceled() {
+        return canceled;
     }
 
     /*
@@ -48,7 +75,7 @@ public class IMMessage implements MessageToServer {
      */
     @Override
     public String getMessageText() {
-        return "1" + "\t" + convName + "\t" + messageID + "\t" + message;
+        return NetworkConstants.IM + "\t" + convName + "\t" + messageId + "\t" + message;
     }
 
     /**
@@ -62,17 +89,17 @@ public class IMMessage implements MessageToServer {
      *            Name of conversation to which the message is to be sent
      * @param _pending
      *            Whether the message is at the "pending" stage
-     * @param _uniqueID
-     *            Message ID (see design doc)
+     * @param _messageId
+     *            Unique message ID (see design doc)
      */
     public IMMessage(String _user, String _message, String _convName,
-            boolean _pending, int _uniqueID) {
-        user = _user;
+            boolean _pending, int _messageId) {
+        username = _user;
         message = _message;
         convName = _convName;
         pending = _pending;
-        messageID = _uniqueID;
-        cancelled = false;
+        messageId = _messageId;
+        canceled = false;
     }
 
 }

@@ -2,25 +2,25 @@ package client;
 
 /**
  * Interface for messages to the server. Each message must have a text body and
- * must be cancellable. When it comes time to send a given message to the
+ * must be cancel-able. When it comes time to send a given message to the
  * server, the OutgoingMessageManager will only send it if it has not yet been
  * cancelled.
  */
 public interface MessageToServer {
 
     /**
-     * Returns the text body of the message.
+     * Returns the text of the message, according to the network protocol grammar.
      */
-    public abstract String getMessageText();
+    public String getMessageText();
 
     /**
-     * Checks whether the message has been cancelled.
+     * Checks whether the message has been canceled.
      */
-    public abstract boolean isCancelled();
+    public boolean isCanceled();
 
     /**
      * Cancels the message.
      */
-    public abstract void cancel();
+    public void cancel();
 
 }

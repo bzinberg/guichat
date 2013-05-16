@@ -5,16 +5,16 @@ package client;
  */
 public class DefaultMessageToServer implements MessageToServer {
     private String messageText;
-    private volatile boolean cancelled;
+    private volatile boolean canceled;
 
     public DefaultMessageToServer(String messageText) {
         this.messageText = messageText;
-        this.cancelled = false;
+        this.canceled = false;
     }
 
-    public DefaultMessageToServer(String messageText, boolean cancelled) {
+    public DefaultMessageToServer(String messageText, boolean canceled) {
         this.messageText = messageText;
-        this.cancelled = cancelled;
+        this.canceled = canceled;
     }
 
     @Override
@@ -23,12 +23,12 @@ public class DefaultMessageToServer implements MessageToServer {
     }
 
     @Override
-    public boolean isCancelled() {
-        return this.cancelled;
+    public boolean isCanceled() {
+        return this.canceled;
     }
 
     @Override
     public void cancel() {
-        this.cancelled = true;
+        this.canceled = true;
     }
 }

@@ -35,8 +35,8 @@ public class ConversationPanel extends JPanel {
     private final String convName;
     protected final MessagesDoc messagesDoc;
 
-    /** Unique ID for our outgoing messages (see design doc) */
-    private int imID;
+    /** Unique messageId for our outgoing messages (see design doc) */
+    private int messageId;
 
     /**
      * Names of other users. The names of other users are already stored in the
@@ -62,12 +62,12 @@ public class ConversationPanel extends JPanel {
         myUsername = _myUsername;
         clientGUI = _clientGUI;
 
-        // Initialize imID to zero
-        imID = 0;
+        // Initialize messageId to zero
+        messageId = 0;
 
         otherUsersSet = new HashSet<String>();
 
-        otherUsersHeading = new JLabel("Other Users:");
+        otherUsersHeading = new JLabel("Other Users");
         otherUsersHeading.setName("otherUsersHeading");
 
         otherUsersModel = new DefaultListModel();
@@ -81,7 +81,7 @@ public class ConversationPanel extends JPanel {
         otherUsersScrollPane = new JScrollPane(otherUsers);
         otherUsersScrollPane.setName("otherUsersScrollPane");
 
-        inviteHeading = new JLabel("Invite new user:");
+        inviteHeading = new JLabel("Invite User");
         inviteHeading.setName("inviteHeading");
 
         inviteField = new JTextField();
@@ -185,7 +185,7 @@ public class ConversationPanel extends JPanel {
         String content = NetworkConstants.EXIT_CONV + "\t" + convName;
         clientGUI.outgoingMessageManager
                 .add(new DefaultMessageToServer(content));
-        clientGUI.removeConversationFromMap(convName);
+        clientGUI.removeConversation(convName);
     }
 
     /**
@@ -213,7 +213,7 @@ public class ConversationPanel extends JPanel {
     /**
      * Sends out an IM message according to the user input. Complains if the
      * contents of the message field are invalid. If the contents are valid,
-     * registers the message as pending and increments imID.
+     * registers the message as pending and increments messageId.
      */
     public void createIMMessage() {
         String messageText = newMessage.getText();
@@ -226,12 +226,12 @@ public class ConversationPanel extends JPanel {
         }
 
         IMMessage message = new IMMessage(myUsername, messageText, convName,
-                true, imID);
+                true, messageId);
         messagesDoc.receiveMessage(message);
 
         clientGUI.outgoingMessageManager.add(message);
 
-        imID++;
+        messageId++;
         newMessage.setText("");
     }
 }
@@ -290,7 +290,7 @@ class DoubleClickUsernameListener extends MouseAdapter {
             int index = list.locationToIndex(e.getPoint());
             String username = (String) list.getModel().getElementAt(index);
             // Request a new two-way conversation
-            String content = "8" + "\t" + username;
+            String content = NetworkConstants.TWO_WAY_CONV + "\t" + username;
             clientGUI.outgoingMessageManager.add(new DefaultMessageToServer(
                     content));
         }

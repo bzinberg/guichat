@@ -26,6 +26,7 @@ class IncomingMessageWorker extends SwingWorker<Void, Void> {
         clientGUI = _clientGUI;
     }
 
+    @Override
     public Void doInBackground() {
         /* Do nothing -- everything happens on the Swing event dispatch thread */
         return null;
@@ -34,8 +35,10 @@ class IncomingMessageWorker extends SwingWorker<Void, Void> {
     /**
      * Handle the given incoming message, updating data fields and modifying GUI
      * elements as necessary. This is thread-safe because GUI elements are only
-     * ever modified from the Swing event dispatch thread.
+     * ever modified from the Swing event dispatch thread. Sets the status bar of
+     * the GUI if a bad message is encountered.
      */
+    @Override
     public void done() {
         // Separate out the message type from the content
         String[] data = message.split("\t", 2);

@@ -44,7 +44,7 @@ public class TopLevelPanel extends JPanel {
     public TopLevelPanel(ClientGUI _clientGUI) {
         clientGUI = _clientGUI;
 
-        otherUsersHeading = new JLabel("Other users:");
+        otherUsersHeading = new JLabel("Other Users");
         otherUsersHeading.setName("otherUsersHeading");
 
         otherUsersModel = new DefaultListModel();
@@ -92,7 +92,7 @@ public class TopLevelPanel extends JPanel {
         taskButtons.add(joinConvButton);
         taskButtons.add(disconnectButton);
 
-        pastConversationsHeading = new JLabel("Past conversations:");
+        pastConversationsHeading = new JLabel("Past Conversations");
         pastConversationsHeading.setName("pastConversationsHeading");
         pastConversationsModel = new DefaultListModel();
         pastConversations = new JList(pastConversationsModel);

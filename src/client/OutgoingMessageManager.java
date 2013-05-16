@@ -22,7 +22,7 @@ public class OutgoingMessageManager {
      * Sends the given message to the server, if it has not yet been cancelled.
      */
     private void send(MessageToServer message) {
-        if (!message.isCancelled()) {
+        if (!message.isCanceled()) {
             out.println(message.getMessageText());
         }
     }

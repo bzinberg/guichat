@@ -3,6 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -353,9 +354,13 @@ public class IMServer implements Runnable {
 	 */
 	void close() throws IOException {
 		serverSocket.close();
-		for(User u : users.values()) {
-			u.interrupt();
+		
+		Collection<User> usersCopy;
+		synchronized(users) {
+			usersCopy = users.values();
 		}
+		for(User u : usersCopy)
+			u.interrupt();
 	}
 	
 	/**

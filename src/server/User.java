@@ -353,8 +353,8 @@ public class User extends Thread {
 	 * Sends an added to conversation message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param u A non-null User whose name to send
-	 * @param convName The name of the conversation to send
+	 * @param u A non-null User whose name to send.
+	 * @param convName The name of the conversation to send, non-null.
 	 */
 	void sendAddedToConvMessage(User u, String convName) {
 		String message = NetworkConstants.ADDED_TO_CONV + "\t" + u.getUsername()
@@ -366,8 +366,8 @@ public class User extends Thread {
 	 * Sends a removed from conversation message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param u A non-null User whose name to send
-	 * @param convName The name of the conversation to send
+	 * @param u A non-null User whose name to send.
+	 * @param convName The name of the conversation to send, non-null.
 	 */
 	void sendRemovedFromConvMessage(User u, String convName) {
 		String message = NetworkConstants.REMOVED_FROM_CONV + "\t"
@@ -380,7 +380,7 @@ public class User extends Thread {
 	 * Sends a connected message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param u A non-null User whose name to send
+	 * @param u A non-null User whose name to send.
 	 */
 	void sendConnectedMessage(User u) {
 		String message = NetworkConstants.CONNECTED + "\t" + u.getUsername();
@@ -391,7 +391,7 @@ public class User extends Thread {
 	 * Sends a disconnected message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param u A non-null User whose name to send
+	 * @param u A non-null User whose name to send.
 	 */
 	void sendDisconnectedMessage(User u) {
 		String message = NetworkConstants.DISCONNECTED + "\t" + u.getUsername();
@@ -402,10 +402,10 @@ public class User extends Thread {
 	 * Sends an IM message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param u A non-null User whose name to send (the sender of the message)
-	 * @param m The message text to send
-	 * @param messageId The ID of this message, unique among all messages sent by u to convName
-	 * @param convName The name of the conversation to send
+	 * @param u A non-null User whose name to send (the sender of the message).
+	 * @param m The message text to send, non-null.
+	 * @param messageId The ID of this message, unique among all messages sent by u to convName.
+	 * @param convName The name of the conversation to send, non-null.
 	 */
 	void sendIMMessage(User u, String m, int messageId, String convName) {
 		String message = NetworkConstants.IM + "\t"
@@ -420,7 +420,7 @@ public class User extends Thread {
 	 * Sends a participants message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param convName The name of the conversation to send
+	 * @param convName The name of the conversation to send, non-null.
 	 * @param users A non-null array of Users, each of which is non-null, whose names
 	 * 		  to send
 	 */
@@ -439,7 +439,8 @@ public class User extends Thread {
 	 * Sends an error message over this.socket, according to the network
 	 * protocol in the design document.
 	 * 
-	 * @param m The message that triggered this error message, to be sent in the error message.
+	 * @param m The message that triggered this error message, to be sent in
+	 * 		  the error message. Non-null.
 	 */
 	void sendErrorMessage(String m) {
 		String message = NetworkConstants.ERROR + "\t" + m;

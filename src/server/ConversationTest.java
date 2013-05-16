@@ -11,7 +11,9 @@ import network.NetworkConstants;
 import org.junit.Test;
 
 /**
+ * 	JUnit Tests for the Conversation class.
  * 
+ *  @category no_didit
  */
 public class ConversationTest {
 	

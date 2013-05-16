@@ -34,7 +34,7 @@ class MessagesDoc extends DefaultStyledDocument {
     // End of the part containing pending messages
     private int endOfPending;
 
-    /** Maps a uniqueID to a message */
+    /** Maps messageId to message */
     protected Map<Integer, IMMessage> pending;
 
     /**
@@ -76,11 +76,11 @@ class MessagesDoc extends DefaultStyledDocument {
      */
     public synchronized void addMessage(IMMessage m)
             throws BadLocationException {
-        String byline = m.getUser() + ": ";
+        String byline = m.getUsername() + ": ";
         String message = m.getMessage() + "\n";
 
         if (m.isPending()) {
-            pending.put(m.getMessageID(), m);
+            pending.put(m.getMessageId(), m);
             this.insertString(endOfPending, byline, boldGrayItal);
             endOfPending += byline.length();
             this.insertString(endOfPending, message, grayItal);
@@ -96,12 +96,13 @@ class MessagesDoc extends DefaultStyledDocument {
     }
 
     /**
-     * Unpend the message with the given ID, if it exists.
+     * Unpend the message with the given messageId, if it exists.  If it doesn't 
+     * exist, throws a BadLocationException.
      * 
-     * @param messageID
-     *            ID of the message to unpend (see design doc)
+     * @param messageId
+     *            messageId of the message to unpend.
      * @throws BadLocationException
-     *             (hopefully never)
+     *            If messageId is not an entry in this.pending.
      */
     public synchronized void unpend(int messageID) throws BadLocationException {
         if (!pending.containsKey(messageID)) {
@@ -111,7 +112,7 @@ class MessagesDoc extends DefaultStyledDocument {
 
         IMMessage oldMessage = pending.get(messageID);
         pending.remove(messageID);
-        IMMessage newMessage = new IMMessage(oldMessage.getUser(),
+        IMMessage newMessage = new IMMessage(oldMessage.getUsername(),
                 oldMessage.getMessage(), convName, false, messageID);
 
         /* Rebuild the pending part of the message display */
@@ -128,13 +129,13 @@ class MessagesDoc extends DefaultStyledDocument {
      * or unpends an existing message if appropriate.
      * 
      * @param message
-     *            The IM message
+     *            The IM message to register.
      */
-    public void receiveMessage(IMMessage message) {
-        if (message.getUser().equals(myUsername)
-                && pending.containsKey(message.getMessageID())) {
+    public synchronized void receiveMessage(IMMessage message) {
+        if (message.getUsername().equals(myUsername)
+                && pending.containsKey(message.getMessageId())) {
             try {
-                unpend(message.getMessageID());
+                unpend(message.getMessageId());
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }

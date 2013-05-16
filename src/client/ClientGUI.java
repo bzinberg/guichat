@@ -93,7 +93,7 @@ public class ClientGUI extends JFrame {
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
         topLevelPanel = new TopLevelPanel(this);
-        tabbedPane.addTab("(Top Level)", topLevelPanel);
+        tabbedPane.addTab("<html><b>Top Level</b></html>", topLevelPanel);
         for (String username : otherUsersSet) {
             topLevelPanel.otherUsersModel.addElement(username);
         }
@@ -141,18 +141,19 @@ public class ClientGUI extends JFrame {
 
     /**
      * Removes convName from the collection of names of conversations that we
-     * think we're involved in. (Does not perform any GUI modifications.)
+     * think we are in. (Does not perform any GUI modifications.)
      * 
      * @param convName
      *            Name of conversation to remove
      */
-    void removeConversationFromMap(String convName) {
+    void removeConversation(String convName) {
     	conversations.remove(convName);
     }
 
     /**
      * Opens a new tab corresponding to the given conversation unless we already
-     * have a tab open for it.
+     * have a tab open for it, in which case an informative message is posted to
+     * the status bar.
      * 
      * @param convName
      *            Name of new conversation
@@ -352,7 +353,7 @@ public class ClientGUI extends JFrame {
      *            The bad previous message to server
      */
     void handleErrorMessage(String rejectedInput) {
-        setStatusText("Server rejected the following message from us: "
+        setStatusText("Server rejected the following message: "
                 + rejectedInput);
     }
 

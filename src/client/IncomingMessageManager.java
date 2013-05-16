@@ -43,8 +43,7 @@ public class IncomingMessageManager {
      * @throws BadServerMessageException
      *             If the message is malformed
      */
-    private void handleIncomingMessage(String message)
-            throws BadServerMessageException {
+    private void handleIncomingMessage(String message){
         IncomingMessageWorker worker = new IncomingMessageWorker(message,
                 clientGUI);
         worker.execute();
@@ -96,8 +95,6 @@ public class IncomingMessageManager {
                     next = incomingMessages.take();
                     handleIncomingMessage(next);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (BadServerMessageException e) {
                     e.printStackTrace();
                 }
             }

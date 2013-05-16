@@ -25,8 +25,12 @@ public class ConversationHistory {
     }
 
     /**
-     * Log a new message in history. Only received messages should be logged,
+     * Logs a new message in history. Only received messages should be logged,
      * not pending messages.
+     * 
+     * If the conversation to which this message belongs is not already in
+     * this.history, adds convName as a row in this.listModel, to display it
+     * in the past conversations table in the top level panel of the GUI.
      */
     public void logNew(IMMessage message) {
         String convName = message.getConvName();
@@ -40,15 +44,15 @@ public class ConversationHistory {
 
     /**
      * Create a MessagesDoc to display the history of the conversation with the
-     * given name.
+     * given name. Requires that the conversation name be in this.history.
      * 
-     * @param conv
+     * @param convName
      *            Name of the conversation
      * @return a MessageDoc for displaying the conversation history
      */
-    public MessagesDoc historyDocument(String conv) {
-        MessagesDoc doc = new MessagesDoc(myUsername, conv);
-        List<IMMessage> messages = history.get(conv);
+    public MessagesDoc historyDocument(String convName) {
+        MessagesDoc doc = new MessagesDoc(myUsername, convName);
+        List<IMMessage> messages = history.get(convName);
         for (IMMessage m : messages) {
             doc.receiveMessage(m);
         }
