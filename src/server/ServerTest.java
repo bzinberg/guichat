@@ -237,7 +237,7 @@ public class ServerTest {
 	
 	/**
 	 * Expect enter conversation message to be sent to a user and an added to conversation
-	 * message o every other user when a user is added to a conversation by a user who is
+	 * message to every other user when a user is added to a conversation by a user who is
 	 * already in the conversation.
 	 */
 	@Test(timeout=1000) public void inConvAndConnectedAndUserExistsAndIsNotInConvAddToConvTest() {

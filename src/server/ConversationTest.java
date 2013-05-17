@@ -3,6 +3,7 @@ package server;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -43,10 +44,13 @@ public class ConversationTest {
 	 */
 	@Test
 	public void oneUserConstructorTest() {
+		ServerSocket serverSocket;
 		Socket socket;
 		User u = null;
 		try {
+			serverSocket = new ServerSocket(NetworkConstants.DEFAULT_PORT);
 			socket = new Socket("localhost", NetworkConstants.DEFAULT_PORT);
+			serverSocket.accept();
 			u = new User(null, socket);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

@@ -239,7 +239,7 @@ public class UsernameSelectWindow extends JFrame {
     }
 
     /**
-     * Displays an alert dialog with text s, then reenables the GUI elements.
+     * Displays an alert dialog with text s, then re-enables the GUI elements.
      * 
      * @param s
      *            Text of message
