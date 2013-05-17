@@ -7,8 +7,6 @@ package network;
 public class NetworkConstants {
 	
 	public static final int DEFAULT_PORT = 4445;
-	public static final int TEST_PORT_1 = 4446;
-	public static final int TEST_PORT_2 = 4447;
 	
 	// Server to client messages.
 	
@@ -30,6 +28,7 @@ public class NetworkConstants {
 	public static final String ADD_TO_CONV = "3";
 	public static final String ENTER_CONV = "4";
 	public static final String EXIT_CONV = "5";
+	public static final String DISCONNECT_NO_TAB = "6";
 	public static final String DISCONNECT = "6\t";
 	public static final String RETRIEVE_PARTICIPANTS = "7";
 	public static final String TWO_WAY_CONV = "8";

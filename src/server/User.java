@@ -158,7 +158,7 @@ public class User extends Thread {
 				processed = enterConv(args);
 			else if(args[0].equals(NetworkConstants.EXIT_CONV))
 				processed = exitConv(args);
-			else if(args[0].equals(NetworkConstants.DISCONNECT))
+			else if(args[0].equals(NetworkConstants.DISCONNECT_NO_TAB))
 				throw new InterruptedException();
 			else if(args[0].equals(NetworkConstants.RETRIEVE_PARTICIPANTS))
 				processed = retrieveParticipants(args);

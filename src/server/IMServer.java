@@ -313,11 +313,13 @@ public class IMServer implements Runnable {
 				}
 			}
 		}
-		synchronized(users) {
-			if(!users.containsKey(username)) {
-				usersArray = users.values().toArray();
-				users.put(username, u);
-				added = true;
+		else {
+			synchronized(users) {
+				if(!users.containsKey(username)) {
+					usersArray = users.values().toArray();
+					users.put(username, u);
+					added = true;
+				}
 			}
 		}
 		if(added) {

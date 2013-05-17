@@ -11,7 +11,7 @@ import java.util.Set;
  *    in the conversation
  *  - name is the name of the conversation as a String.  name is globally unique
  *    among all conversations in any IMServer, and is the String corresponding to
- *    the conversation in the conversations map in IMServer.
+ *    the conversation in the conversations map in IMServer.  It is non-null.
  * 
  * See the Conversation section in the design document for more information on
  * the Conversation class.
@@ -25,7 +25,7 @@ public class Conversation {
 	 * Creates an instance of Conversation with the given name.
 	 * Sets this.name to name and initializes this.users.
 	 * 
-	 * @param name The name of this Conversation.
+	 * @param name The name of this Conversation, non-null.
 	 */
 	Conversation(String name) {
 		this.name = name;
@@ -38,7 +38,7 @@ public class Conversation {
 	 * u to this.users, and tells u to add this to its set of conversations
 	 * (which causes an entered conversation message to be sent to u).
 	 * 
-	 * @param name The name of this Conversation.
+	 * @param name The name of this Conversation, non-null.
 	 * @param u The User to be added to this Conversation.
 	 */
 	Conversation(String name, User u) {
@@ -56,7 +56,7 @@ public class Conversation {
 	 * 
 	 * Requires that u1 is not equal to u2.
 	 * 
-	 * @param name The name of this Conversation.
+	 * @param name The name of this Conversation, non-null.
 	 * @param u1 One User to be added to this Conversation.
 	 * @param u2 Another User to be added to this Conversation, different from u1.
 	 */
@@ -124,6 +124,8 @@ public class Conversation {
 	/**
 	 * Sends to every User in this.users a message with the given sender,
 	 * message text, and message ID.
+	 * 
+	 * Precondition: this.users is non-empty.
 	 * 
 	 * @param u The sending user, non-null.
 	 * @param m The message text.
