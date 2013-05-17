@@ -178,6 +178,7 @@ public class ServerTest {
 	}
 
 	/**
+	 * TODO: Check that this is finished
 	 * Expect IM message to be sent to all clients in a conversation when the sender of
 	 * an IM message is in the conversation and other clients are also in the conversation.
 	 */
@@ -276,7 +277,7 @@ public class ServerTest {
 	
 	/**
 	 * Expect enter conversation message to be sent to a user and an added to conversation
-	 * message o every other user when a user is added to a conversation by a user who is
+	 * message to every other user when a user is added to a conversation by a user who is
 	 * already in the conversation.
 	 */
 	@Test(timeout=1000) public void inConvAndConnectedAndUserExistsAndIsNotInConvAddToConvTest() {

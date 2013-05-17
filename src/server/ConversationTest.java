@@ -45,7 +45,7 @@ public class ConversationTest {
 	@Test(timeout=1000)
 	public void oneUserConstructorTest() {
 		ServerSocket serverSocket = null;
-		Socket socket;
+		Socket socket = null;
 		User u = null;
 		try {
 			serverSocket = new ServerSocket(NetworkConstants.DEFAULT_PORT);
@@ -58,16 +58,20 @@ public class ConversationTest {
 		} catch (IOException e) {
 			e.printStackTrace();
 			assertTrue(false);
+		} finally {
+			try {
+				if(socket != null)
+				socket.close();
+				if(serverSocket != null)
+				serverSocket.close();
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
 		}
 		u.setUsername("user");
 		Conversation conv = new Conversation("conv", u);
 		assertEquals("conv\tuser", conv.toString());
 		u.interrupt();
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			assertTrue(false);
-		}
 	}
 	
 	/**
