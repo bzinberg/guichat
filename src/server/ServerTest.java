@@ -16,6 +16,15 @@ import network.NetworkConstants;
  */
 public class ServerTest {
 	
+	// The amount of time to wait before assuming a network message has been delivered
+	// For the purpose of testing only
+	private final int EXPECTED_NETWORK_DELAY = 200;
+	
+	private void waitForNetworkMessage() {
+		long time = System.currentTimeMillis(); // Wait to make sure other user is connected.
+		while(System.currentTimeMillis() - time < 200);
+	}
+	
 	//TODO: IMPLEMENT THE TESTS THAT HAVE ONLY A METHOD HEADER.
 	
 	/**
@@ -65,8 +74,7 @@ public class ServerTest {
 			client1 = new TestClient(NetworkConstants.DEFAULT_PORT);
 			client2 = new TestClient(NetworkConstants.DEFAULT_PORT);
 			client1.send(NetworkConstants.CONNECT + "\tuser");
-			long time = System.currentTimeMillis(); // Wait to make sure other user is connected.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			client2.send(NetworkConstants.CONNECT + "\tuser");
 			assertEquals(NetworkConstants.DISCONNECTED + "\tuser", client2.readLine());
 		} catch(IOException e) {
@@ -103,8 +111,7 @@ public class ServerTest {
 				clients[i] = new TestClient(NetworkConstants.DEFAULT_PORT);
 				clients[i].send(NetworkConstants.CONNECT + "\tuser" + i);
 			}
-			long time = System.currentTimeMillis(); // Wait to make sure other users are connected.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			clients[0] = new TestClient(NetworkConstants.DEFAULT_PORT);
 			clients[0].send(NetworkConstants.CONNECT + "\tuser0");
 			StringBuilder expected = new StringBuilder(NetworkConstants.INIT_USERS_LIST + "\tuser0");
@@ -145,8 +152,7 @@ public class ServerTest {
 				clients[i] = new TestClient(NetworkConstants.DEFAULT_PORT);
 				clients[i].send(NetworkConstants.CONNECT + "\tuser" + i);
 			}
-			long time = System.currentTimeMillis(); // Wait to make sure other users are connected.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			clients[0] = new TestClient(NetworkConstants.DEFAULT_PORT);
 			clients[0].send(NetworkConstants.CONNECT + "\tuser0");
 			StringBuilder expected = new StringBuilder(NetworkConstants.INIT_USERS_LIST + "\tuser0");
@@ -176,7 +182,40 @@ public class ServerTest {
 	 * an IM message is in the conversation and other clients are also in the conversation.
 	 */
 	@Test(timeout=1000) public void inConvMultipleUserIMTest() {
-		
+		IMServer server = null;
+		TestClient[] clients = new TestClient[5];
+		Thread serverThread = null;
+		try {
+			server = new IMServer(NetworkConstants.DEFAULT_PORT);
+			serverThread = new Thread(server);
+			serverThread.start();
+			for(int i = 1; i < clients.length; ++i) {
+				clients[i] = new TestClient(NetworkConstants.DEFAULT_PORT);
+				clients[i].send(NetworkConstants.CONNECT + "\tuser" + i);
+			}
+			waitForNetworkMessage();
+			clients[0] = new TestClient(NetworkConstants.DEFAULT_PORT);
+			clients[0].send(NetworkConstants.CONNECT + "\tuser0");
+			StringBuilder expected = new StringBuilder(NetworkConstants.INIT_USERS_LIST + "\tuser0");
+			for(int i = 1; i < clients.length; ++i)
+				expected.append("\t" + NetworkConstants.USERNAME);
+			assertTrue(clients[0].readLine().matches(expected.toString()));
+		} catch(IOException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		} finally {
+			if(server != null) {
+				try {
+					server.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+			for(TestClient client : clients) {
+				if(client != null)
+					client.close();
+			}
+		}
 	}
 	
 	/**
@@ -419,8 +458,7 @@ public class ServerTest {
 			serverThread.start();
 			client1.send(NetworkConstants.CONNECT + "\tuser1");
 			client2.send(NetworkConstants.CONNECT + "\tuser2");
-			long time = System.currentTimeMillis(); // Wait to ensure connection.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			client1.send(NetworkConstants.TWO_WAY_CONV + "\tuser2");
 			client1.readLine();
 			String line1 = client1.readLine();
@@ -506,8 +544,7 @@ public class ServerTest {
 			serverThread = new Thread(server);
 			serverThread.start();
 			client2.send(NetworkConstants.CONNECT + "\tuser2");
-			long time = System.currentTimeMillis(); // Wait to ensure connection.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			client1.send(NetworkConstants.TWO_WAY_CONV + "\tuser2");
 			String line1 = client1.readLine();
 			assertTrue(line1.matches(NetworkConstants.ERROR + "\t" +
@@ -580,8 +617,7 @@ public class ServerTest {
 			serverThread.start();
 			client1.send(NetworkConstants.CONNECT + "\tuser");
 			client2.send(NetworkConstants.CONNECT + "\tuser");
-			long time = System.currentTimeMillis(); // Wait to ensure connection.
-			while(System.currentTimeMillis() - time < 200);
+			waitForNetworkMessage();
 			client1.send(NetworkConstants.TWO_WAY_CONV + "\tuser");
 			client1.readLine();
 			String line = client1.readLine();

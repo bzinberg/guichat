@@ -3,6 +3,7 @@ package server;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -41,12 +42,15 @@ public class ConversationTest {
 	/**
 	 * Check that constructor with one initial user and toString work.
 	 */
-	@Test
+	@Test(timeout=1000)
 	public void oneUserConstructorTest() {
+		ServerSocket serverSocket = null;
 		Socket socket;
 		User u = null;
 		try {
+			serverSocket = new ServerSocket(NetworkConstants.DEFAULT_PORT);
 			socket = new Socket("localhost", NetworkConstants.DEFAULT_PORT);
+			serverSocket.accept();
 			u = new User(null, socket);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -58,6 +62,49 @@ public class ConversationTest {
 		u.setUsername("user");
 		Conversation conv = new Conversation("conv", u);
 		assertEquals("conv\tuser", conv.toString());
+		u.interrupt();
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			assertTrue(false);
+		}
+	}
+	
+	/**
+	 * Check that constructor with one initial user and toString work.
+	 */
+	@Test
+	public void twoUserConstructorTest() {
+		ServerSocket serverSocket = null;
+		Socket socket;
+		User u = null;
+		User v = null;
+		try {
+			serverSocket = new ServerSocket(NetworkConstants.DEFAULT_PORT);
+			socket = new Socket("localhost", NetworkConstants.DEFAULT_PORT);
+			serverSocket.accept();
+			u = new User(null, socket);
+			socket = new Socket("localhost", NetworkConstants.DEFAULT_PORT);
+			serverSocket.accept();
+			v = new User(null, socket);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		} catch (IOException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		u.setUsername("user1");
+		v.setUsername("user2");
+		Conversation conv = new Conversation("conv", u, v);
+		assertEquals("conv\tuser2\tuser1", conv.toString());
+		u.interrupt();
+		v.interrupt();
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			assertTrue(false);
+		}
 	}
 
 	/**

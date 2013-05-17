@@ -7,6 +7,8 @@ package network;
 public class NetworkConstants {
 	
 	public static final int DEFAULT_PORT = 4445;
+	public static final int TEST_PORT_1 = 4446;
+	public static final int TEST_PORT_2 = 4447;
 	
 	// Server to client messages.
 	
