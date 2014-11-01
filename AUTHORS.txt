@@ -1,0 +1,5 @@
+Authors:
+
+Akashnil Dutta <akashnil@mit.edu>
+Vinay Mayar <vmayar@mit.edu>
+Ben Zinberg <bzinberg@mit.edu>
